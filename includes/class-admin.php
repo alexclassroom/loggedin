@@ -212,7 +212,6 @@ class Admin {
 			array( $this, 'loggedin_old_settings' ),
 			'general'
 		);
-
 	}
 
 	/**
@@ -230,7 +229,7 @@ class Admin {
 		<p class="description">
 			<?php
 			printf(
-			// translators: %s loggedin settings page url.
+				// translators: %s loggedin settings page url.
 				__( 'Loggedin settings have been relocated. <a href="%s">Click here</a> to access the new settings page.', 'loggedin' ),
 				esc_url( admin_url( 'options-general.php?page=loggedin' ) )
 			);
@@ -338,7 +337,7 @@ class Admin {
 					<p>
 						<?php
 						printf(
-						// translators: %1$s Current user's name. %2$s Plugin name.
+							// translators: %1$s Current user's name. %2$s Plugin name.
 							__( 'Hey %1$s, I noticed you\'ve been using %2$s plugin for more than 1 week – that’s awesome! Could you please do me a BIG favor and give it a 5-star rating on WordPress? Just to help us spread the word and boost our motivation.', 'loggedin' ),
 							empty( $current_user->display_name ) ? esc_html__( 'there', 'loggedin' ) : esc_html( ucwords( $current_user->display_name ) ),
 							'<strong>Loggedin - Limit Active Logins</strong>'
@@ -377,6 +376,11 @@ class Admin {
 	 * @return void
 	 */
 	public function review_action() {
+		// Only for admins.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
 		// Get the current review action.
 		// phpcs:ignore
 		$action = isset( $_REQUEST['loggedin_rating'] ) ? $_REQUEST['loggedin_rating'] : '';
