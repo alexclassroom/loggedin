@@ -53,8 +53,8 @@ if ( ! function_exists( __NAMESPACE__ . '\\init' ) ) {
 		);
 
 		// Load required files.
-		require dirname( __FILE__ ) . '/includes/class-core.php';
-		require dirname( __FILE__ ) . '/includes/class-admin.php';
+		require __DIR__ . '/includes/class-core.php';
+		require __DIR__ . '/includes/class-admin.php';
 
 		// Load classes.
 		new Core();

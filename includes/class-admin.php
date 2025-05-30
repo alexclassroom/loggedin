@@ -38,7 +38,6 @@ class Admin {
 		// Set options page.
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
-		add_action( 'admin_init', array( $this, 'old_options_page' ) );
 
 		// Process the login action.
 		add_action( 'admin_init', array( $this, 'force_logout' ) );
@@ -191,27 +190,6 @@ class Admin {
 			</form>
 		</div>
 		<?php
-	}
-
-	/**
-	 * Create new option field for old settings section.
-	 *
-	 * @since     1.0.0
-	 * @access    public
-	 * @uses      register_setting()   To register new setting.
-	 * @uses      add_settings_field() To add new field to for the setting.
-	 * @depecated 1.4.0
-	 *
-	 * @return void
-	 */
-	public function old_options_page() {
-		add_settings_section(
-			'loggedin_settings',
-			// translators: %s lock icon.
-			sprintf( __( '%s Loggedin Settings', 'loggedin' ), '<span class="dashicons dashicons-lock"></span>' ),
-			array( $this, 'loggedin_old_settings' ),
-			'general'
-		);
 	}
 
 	/**
