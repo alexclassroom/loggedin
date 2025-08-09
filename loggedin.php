@@ -6,8 +6,8 @@
  *
  * Plugin Name:     Loggedin - Limit Active Logins
  * Plugin URI:      https://duckdev.com/products/loggedin-limit-active-logins/
- * Description:     Light weight plugin to limit number of active logins from an account. Set maximum number of concurrent logins a user can have from multiple places.
- * Version:         1.4.0
+ * Description:     Limit an account to a specific number of simultaneous logins across all devices.
+ * Version:         2.0.0
  * Author:          Joel James
  * Author URI:      https://duckdev.com/
  * Donate link:     https://paypal.me/JoelCJ
@@ -16,31 +16,35 @@
  * Text Domain:     loggedin
  * Domain Path:     /languages
  *
- * LoggedIn is free software: you can redistribute it and/or modify
+ * Loggedin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
  * any later version.
  *
- * LoggedIn is distributed in the hope that it will be useful,
+ * Loggedin is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with LoggedIn. If not, see <http://www.gnu.org/licenses/>.
+ * along with Loggedin. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace DuckDev\LoggedIn;
+namespace DuckDev\Loggedin;
 
 // If this file is called directly, abort.
 defined( 'WPINC' ) || die;
+
+// Plugin directory path.
+define( 'LOGGEDIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'LOGGEDIN_FILE', __FILE__ );
 
 // Make sure loggedin is not already defined.
 if ( ! function_exists( __NAMESPACE__ . '\\init' ) ) {
 	/**
 	 * Main instance of plugin.
 	 *
-	 * @since 1.3.0
+	 * @since 2.0.0
 	 *
 	 * @return void
 	 */
@@ -52,13 +56,13 @@ if ( ! function_exists( __NAMESPACE__ . '\\init' ) ) {
 			dirname( plugin_basename( __FILE__ ) ) . '/languages/'
 		);
 
-		// Load required files.
-		require __DIR__ . '/includes/class-core.php';
-		require __DIR__ . '/includes/class-admin.php';
+		// Load autoloader.
+		require __DIR__ . '/vendor/autoload.php';
 
 		// Load classes.
 		new Core();
 		new Admin();
+		new Addons();
 
 		/**
 		 * Action hook to execute after our plugin init.

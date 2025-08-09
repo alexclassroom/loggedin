@@ -10,7 +10,7 @@
  * @author     Joel James <me@joelsays.com>
  */
 
-namespace DuckDev\LoggedIn;
+namespace DuckDev\Loggedin;
 
 // If this file is called directly, abort.
 defined( 'WPINC' ) || die;

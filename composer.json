@@ -1,8 +1,23 @@
 {
-    "name": "loggedin/loggedin",
-    "type": "wordpress-plugin",
-    "description": "Limit number of active logins for a user account in WordPress",
-    "require": {
-        "php": ">=7.0"
+  "name": "loggedin/loggedin",
+  "description": "Limit number of active logins for a user account in WordPress",
+  "version": "2.0.0",
+  "homepage": "https://wordpress.org/plugins/loggedin/",
+  "license": "GPL-2.0+",
+  "type": "wordpress-plugin",
+  "optimize-autoloader": true,
+  "config": {
+    "platform": {
+      "php": "7.4"
     }
+  },
+  "autoload": {
+    "classmap": [
+      "includes/"
+    ]
+  },
+  "require": {
+    "php": ">=7.4",
+    "duckdev/freemius-plugin-licensing": "^1.0.0-beta2"
+  }
 }
