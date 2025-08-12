@@ -6,6 +6,7 @@
  *
  * @var int    $login_maximum Maximum logins allowed.
  * @var string $login_logic   Login logic.
+ * @var array  $logics        Loggedin logics.
  *
  * @link       https://duckdev.com/products/loggedin-limit-active-logins/
  * @author     Joel James <me@joelsays.com>
@@ -25,10 +26,7 @@ use DuckDev\Loggedin\View;
 	// Settings form.
 	View::render(
 		'settings/settings-form',
-		array(
-			'login_maximum' => $login_maximum,
-			'login_logic'   => $login_logic,
-		)
+		compact( 'login_maximum', 'login_logic', 'logics' )
 	);
 
 	/**

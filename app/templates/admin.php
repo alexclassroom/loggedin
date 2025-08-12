@@ -11,6 +11,7 @@
  * @var string $login_logic       Login logic.
  * @var array  $registered_addons Registered addons.
  * @var array  $license_items     License items.
+ * @var array  $logics            Loggedin logics.
  *
  * @link       https://duckdev.com/products/loggedin-limit-active-logins/
  * @author     Joel James <me@joelsays.com>
@@ -44,6 +45,6 @@ if ( 'addons' === $current_tab && ! empty( $addons ) ) {
 } else {
 	View::render(
 		'tab-settings',
-		compact( 'login_maximum', 'login_logic' )
+		compact( 'login_maximum', 'login_logic', 'logics' )
 	);
 }

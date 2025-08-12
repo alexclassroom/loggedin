@@ -15,7 +15,8 @@
  */
 
 ?>
-<div id="dashboard-widgets" class="metabox-holder">
+<br/>
+<div id="dashboard-widgets">
 	<div class="postbox-container">
 		<div class="meta-box-sortables">
 			<div class="postbox">
@@ -39,9 +40,9 @@
 					<p><strong><?php esc_attr_e( 'Do you need help?', 'loggedin' ); ?></strong></p>
 					<p><?php esc_attr_e( 'Here are some available options to help solve your problems.', 'loggedin' ); ?></p>
 					<ol>
-						<li><a href="https://wordpress.org/plugins/loggedin/#faq-header" target="_blank">FAQ</a></li>
+						<li><a href="https://wordpress.org/plugins/loggedin/#faq-header" target="_blank"><?php esc_attr_e( 'FAQ', 'loggedin' ); ?></a></li>
 						<li><a href="https://wordpress.org/support/plugin/loggedin/" target="_blank"><?php esc_attr_e( 'Support forums', 'loggedin' ); ?></a></li>
-						<li><a href="https://duckdev.com/docs/loggedin/" target="_blank">Support docs</a></li>
+						<li><a href="https://duckdev.com/docs/loggedin/" target="_blank"><?php esc_attr_e( 'Support docs', 'loggedin' ); ?></a></li>
 						<li><a href="https://duckdev.com/contact/" target="_blank"><?php esc_attr_e( 'Premium support', 'loggedin' ); ?></a></li>
 					</ol>
 				</div>

@@ -2,7 +2,7 @@
 /**
  * Navigation menu template.
  *
- * @since      1.0.0
+ * @since      2.0.0
  *
  * @var string $current_tab Current menu item.
  * @var array  $tab_items   Nav menu items.
@@ -14,11 +14,13 @@
  * @package    View
  */
 
+admin_url();
+
 ?>
 <h2 class="nav-tab-wrapper">
 	<?php foreach ( $tab_items as $tab_key => $tab_item ) : ?>
 		<a
-			href="<?php echo esc_url( add_query_arg( 'tab', $tab_key ) ); ?>"
+			href="<?php echo esc_url( add_query_arg( array( 'page' => 'loggedin', 'tab' => $tab_key ), admin_url( 'users.php' ) ) ); ?>"
 			class="nav-tab <?php echo $tab_key === $current_tab ? 'nav-tab-active' : ''; ?>"
 		>
 			<?php if ( ! empty( $tab_item['icon'] ) ) : ?>

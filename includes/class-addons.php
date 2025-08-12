@@ -25,11 +25,13 @@ use DuckDev\Freemius\Freemius;
 class Addons {
 
 	/**
-	 * Freemius plugin ID.
+	 * Freemius ID of the addon.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @var int
 	 */
-	const PLUGIN_ID = 19328;
+	const FREEMIUS_ID = 19328;
 
 	/**
 	 * Freemius instance.
@@ -53,6 +55,8 @@ class Addons {
 		add_action( 'admin_init', array( $this, 'init_freemius' ) );
 		// Process license activate/deactivate.
 		add_action( 'admin_init', array( $this, 'process_license' ) );
+		// Process addon list refresh.
+		add_action( 'admin_init', array( $this, 'process_addons_refresh' ) );
 		// Add template vars.
 		add_filter( 'loggedin_admin_page_vars', array( $this, 'admin_page_vars' ) );
 	}
@@ -65,11 +69,13 @@ class Addons {
 	 *
 	 * @since 2.0.0
 	 *
+	 * @param bool $force Should force refresh.
+	 *
 	 * @return array
 	 */
-	public function get_addons(): array {
+	public function get_addons( bool $force = false ): array {
 		// Get addon list from the API.
-		return $this->freemius[ self::PLUGIN_ID ]->addon()->get_addons();
+		return $this->freemius[ self::FREEMIUS_ID ]->addon()->get_addons( $force );
 	}
 
 	/**
@@ -108,17 +114,16 @@ class Addons {
 	 * @return array
 	 */
 	public function admin_page_vars( array $vars ): array {
-		$addons            = $this->get_addons();
-		$registered_addons = $this->get_registered_addons();
+		$addons = $this->get_addons();
 
-		// If addons found.
+		// If addons are empty, remove the tab.
 		if ( empty( $addons ) ) {
 			unset( $vars['addons'] );
 		}
 
 		$vars['addons']            = $addons;
 		$vars['license_items']     = $this->get_license_items();
-		$vars['registered_addons'] = $registered_addons;
+		$vars['registered_addons'] = $this->get_registered_addons();
 
 		return $vars;
 	}
@@ -158,6 +163,13 @@ class Addons {
 		$key    = sanitize_text_field( $data['key'] );
 		$action = 'activate' === $data['action'] ? 'activate' : 'deactivate';
 
+		// Do not continue if addon not initialised.
+		if ( ! isset( $this->freemius[ $id ] ) ) {
+			add_settings_error( 'loggedin_licenses', 'addon_not_initialized', __( 'Addon not initialized.', 'loggedin' ) );
+
+			return;
+		}
+
 		if ( 'activate' === $action ) {
 			$response = $this->freemius[ $id ]->license()->activate( $key );
 		} else {
@@ -179,6 +191,33 @@ class Addons {
 	}
 
 	/**
+	 * Process addon list refresh request.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return void
+	 */
+	public function process_addons_refresh() {
+		// We need all these data to continue.
+		if ( ! isset( $_GET['_wpnonce'], $_GET['loggedin-addons-refresh'] ) ) {
+			return;
+		}
+
+		// Nonce verification first.
+		if ( ! wp_verify_nonce( sanitize_text_field( $_GET['_wpnonce'] ), 'loggedin-addons-refresh' ) ) {
+			return;
+		}
+
+		// Now check permissions.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Force refresh addons.
+		$this->get_addons( true );
+	}
+
+	/**
 	 * Initialise Freemius SDK.
 	 *
 	 * This will create new Freemius instance for the parent plugin
@@ -190,8 +229,8 @@ class Addons {
 	 */
 	public function init_freemius(): void {
 		// Initialize Freemius for Loggedin.
-		$this->freemius[ self::PLUGIN_ID ] = Freemius::get_instance(
-			19328,
+		$this->freemius[ self::FREEMIUS_ID ] = Freemius::get_instance(
+			self::FREEMIUS_ID,
 			array(
 				'slug'       => 'loggedin',
 				'is_premium' => false,

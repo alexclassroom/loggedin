@@ -2,7 +2,7 @@
 /**
  * Addon license form template.
  *
- * @since      1.0.0
+ * @since      2.0.0
  *
  * @var int    $id                Addon ID.
  * @var string $license_key       License key.

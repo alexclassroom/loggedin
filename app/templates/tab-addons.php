@@ -19,14 +19,14 @@ use DuckDev\Freemius\Services\Service;
 use DuckDev\Loggedin\View;
 
 ?>
-<p></p>
+<br/>
 <div class="widefat">
 	<div id="the-list">
 		<?php if ( ! empty( $addons ) ) : ?>
 			<?php
 			foreach ( $addons as $addon ) {
 				View::render(
-					'addons/card',
+					'addons/addon-card',
 					array(
 						'id'                => $addon['id'],
 						'title'             => $addon['title'] ?? '',
@@ -37,6 +37,7 @@ use DuckDev\Loggedin\View;
 						'is_premium'        => $addon['is_premium'] ?? false,
 						'icon'              => $addon['icon'] ?? '',
 						'description'       => $addon['info']['description'] ?? '',
+						'homepage'          => $addon['info']['url'] ?? 'https://duckdev.com/',
 					)
 				);
 			}
@@ -47,4 +48,15 @@ use DuckDev\Loggedin\View;
 			</div>
 		<?php endif; ?>
 	</div>
+</div>
+<div class="tablenav bottom">
+	<p>
+		<?php
+		printf(
+			esc_attr__( 'Missing an extension that you think you should be able to see? %sRefresh the list now%s', 'loggedin' ),
+			'<a href="' . esc_url_raw( wp_nonce_url( add_query_arg( 'loggedin-addons-refresh', 1 ), 'loggedin-addons-refresh' ) ) . '">',
+			'</a>'
+		);
+		?>
+	</p>
 </div>

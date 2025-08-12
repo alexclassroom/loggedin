@@ -2,7 +2,7 @@
 /**
  * Addon card template.
  *
- * @since      1.0.0
+ * @since      2.0.0
  *
  * @var int    $id                Addon ID.
  * @var string $title             Addon name.
@@ -13,6 +13,7 @@
  * @var bool   $is_premium        Is premium.
  * @var bool   $is_active         Is addon active.
  * @var bool   $is_license_active Is license active.
+ * @var string $homepage          Home page URL.
  *
  * @link       https://duckdev.com/products/loggedin-limit-active-logins/
  * @author     Joel James <me@joelsays.com>
@@ -55,7 +56,7 @@ use DuckDev\Loggedin\View;
 		</div>
 		<div class="desc column-description">
 			<p><?php echo esc_html( $description ); ?></p>
-			<p class="authors"><cite>By <a href="https://profiles.wordpress.org/joelcj91/">Joel James</a></cite></p>
+			<p class="authors"><cite>By <a href="https://profiles.wordpress.org/joelcj91/" target="_blank">Joel James</a></cite></p>
 		</div>
 	</div>
 	<?php if ( $is_active ) : ?>
@@ -70,7 +71,9 @@ use DuckDev\Loggedin\View;
 	<?php else : ?>
 		<div class="plugin-card-bottom">
 			<div class="column-rating"><strong><?php $is_premium ? esc_attr_e( 'Premium' ) : esc_attr_e( 'Free' ); ?></strong></div>
-			<div class="column-updated"><a href="https://duckdev.com">More Details</a></div>
+			<div class="column-updated">
+				<a href="<?php echo esc_url_raw( $homepage ); ?>" target="_blank"><?php esc_attr_e( 'More Details', 'loggedin' ); ?></a>
+			</div>
 		</div>
 	<?php endif; ?>
 </div>

@@ -20,7 +20,7 @@ defined( 'WPINC' ) || die;
 class View {
 
 	/**
-	 * Initialize the class.
+	 * Dummy initializer.
 	 *
 	 * @since 2.0.0
 	 *

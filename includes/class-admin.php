@@ -145,16 +145,17 @@ class Admin {
 			'login_maximum' => get_option( 'loggedin_maximum', 3 ),
 			'login_logic'   => get_option( 'loggedin_logic', 'allow' ),
 			'current_tab'   => $this->get_current_tab(),
+			'logics'        => $this->loggedin_logics(),
 			'tab_items'     => array(
 				'settings' => array(
 					'label' => __( 'Settings', 'loggedin' ),
 					'icon'  => 'dashicons-admin-settings',
 				),
-				'addons' => array(
+				'addons'   => array(
 					'label' => __( 'Addons', 'loggedin' ),
 					'icon'  => 'dashicons-screenoptions',
 				),
-				'support' => array(
+				'support'  => array(
 					'label' => __( 'Support', 'loggedin' ),
 					'icon'  => 'dashicons-editor-help',
 				),
@@ -205,7 +206,7 @@ class Admin {
 		<p class="description">
 			<?php
 			printf(
-			// translators: %s loggedin settings page url.
+				// translators: %s loggedin settings page url.
 				__( 'Loggedin settings have been relocated. <a href="%s">Click here</a> to access the new settings page.', 'loggedin' ),
 				esc_url( admin_url( 'users.php?page=loggedin' ) )
 			);
@@ -302,10 +303,45 @@ class Admin {
 	 *
 	 * @return string
 	 */
-	private function get_current_tab(): string {
-		$tabs = array( 'settings', 'addons', 'licenses', 'support' );
+	protected function get_current_tab(): string {
+		$tabs = array( 'settings', 'addons', 'support' );
 		$tab  = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'settings';
 
 		return in_array( $tab, $tabs, true ) ? $tab : 'settings';
+	}
+
+	/**
+	 * List of logics being used by loggedin.
+	 *
+	 * Third party plugins and addons can use the filter to add new logics.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return array
+	 */
+	protected function loggedin_logics(): array {
+		$logics = array(
+			'logout_oldest' => array(
+				'label' => __( 'Logout Oldest', 'loggedin' ),
+				'desc'  => esc_html__( 'When the concurrent login limit is reached, a new login will automatically end the single oldest active session. This feature works only with user meta session storage.', 'loggedin' ),
+			),
+			'allow'         => array(
+				'label' => __( 'Logout All', 'loggedin' ),
+				'desc'  => esc_html__( 'When the concurrent login limit is reached, a new login will automatically terminate all previously active sessions.', 'loggedin' ),
+			),
+			'block'         => array(
+				'label' => __( 'Block New', 'loggedin' ),
+				'desc'  => esc_html__( 'If the concurrent login limit is reached, do not allow new logins. Users must then wait for existing login sessions to expire.', 'loggedin' ),
+			),
+		);
+
+		/**
+		 * Logged logics.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param array $logics Logics.
+		 */
+		return apply_filters( 'loggedin_logics', $logics );
 	}
 }

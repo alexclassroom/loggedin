@@ -30,8 +30,7 @@ class Core {
 	 *
 	 * We register all our common hooks here.
 	 *
-	 * @since  1.0.0
-	 * @access public
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -48,30 +47,34 @@ class Core {
 	 * This check happens only after authentication happens and
 	 * the login logic is "Allow".
 	 *
+	 * @since 1.0.0
+	 *
 	 * @param boolean $check    User Object/WPError.
 	 * @param string  $password Plaintext user's password.
 	 * @param string  $hash     Hash of the user's password to check against.
 	 * @param int     $user_id  User ID.
 	 *
-	 * @since  1.0.0
-	 * @access public
-	 *
 	 * @return bool
 	 */
-	public function validate_allow_logic( $check, $password, $hash, $user_id ) {
+	public function validate_allow_logic( $check, $password, $hash, $user_id ): bool {
 		// If the validation failed already, bail.
 		if ( ! $check ) {
 			return false;
 		}
 
-		// Do not allow new logins.
-		if ( 'allow' === get_option( 'loggedin_logic', 'allow' ) ) {
-			// Check if limit exceed.
-			if ( $this->reached_limit( $user_id ) ) {
-				// Sessions token instance.
-				$manager = WP_Session_Tokens::get_instance( $user_id );
-				// Destroy all others.
-				$manager->destroy_all();
+		// Get current logic.
+		$logic = get_option( 'loggedin_logic', 'allow' );
+
+		if ( in_array( $logic, array( 'allow', 'logout_oldest' ) ) ) {
+			// Continue only if limit reached.
+			if ( $this->has_limit_reached( $user_id ) ) {
+				if ( 'allow' === $logic ) {
+					// Destroy all others.
+					$this->destroy_all_sessions( $user_id );
+				} elseif ( 'logout_oldest' === $logic ) {
+					// Destroy oldest session.
+					$this->destroy_oldest_session( $user_id );
+				}
 			}
 		}
 
@@ -85,10 +88,9 @@ class Core {
 	 * This check happens only after authentication happens and
 	 * the login logic is "Block".
 	 *
-	 * @param object $user User Object/WPError.
+	 * @since 1.0.0
 	 *
-	 * @since  1.0.0
-	 * @access public
+	 * @param object $user User Object/WPError.
 	 *
 	 * @return object User object or error object.
 	 */
@@ -98,15 +100,69 @@ class Core {
 			return $user;
 		}
 
+		$logic = get_option( 'loggedin_logic', 'allow' );
+
 		// Only when block method.
-		if ( 'block' === get_option( 'loggedin_logic', 'allow' ) ) {
+		if ( 'block' === $logic ) {
 			// Check if limit exceed.
-			if ( $this->reached_limit( $user->ID ) ) {
-				return new WP_Error( 'loggedin_reached_limit', $this->error_message() );
+			if ( $this->has_limit_reached( $user->ID ) ) {
+				return new WP_Error( 'login_limit_reached', $this->limit_error_message() );
 			}
 		}
 
 		return $user;
+	}
+
+	/**
+	 * Destroy all sessions of the user.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param int $user_id User ID.
+	 *
+	 * @return void
+	 */
+	protected function destroy_all_sessions( int $user_id ) {
+		// Destroy all sessions.
+		WP_Session_Tokens::get_instance( $user_id )->destroy_all();
+	}
+
+	/**
+	 * Log out only the oldest session for the user.
+	 *
+	 * This function retrieves the raw session tokens directly from user meta,
+	 * identifies the oldest session by its login timestamp, and removes it.
+	 * This will not work when a different type of session storage (eg: Redis) is being used.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param int $user_id User ID.
+	 *
+	 * @return void
+	 */
+	protected function destroy_oldest_session( int $user_id ) {
+		// Retrieve the raw sessions array directly from user meta.
+		$sessions = get_user_meta( $user_id, 'session_tokens', true );
+		if ( ! is_array( $sessions ) || empty( $sessions ) ) {
+			return;
+		}
+
+		$oldest_token = '';
+		$oldest_time  = time();
+
+		// Loop through sessions to find the oldest one.
+		foreach ( $sessions as $token => $session ) {
+			if ( isset( $session['login'] ) && $session['login'] < $oldest_time ) {
+				$oldest_time  = $session['login'];
+				$oldest_token = $token;
+			}
+		}
+
+		if ( ! empty( $oldest_token ) ) {
+			// Destroy oldest session.
+			unset( $sessions[ $oldest_token ] );
+			update_user_meta( $user_id, 'session_tokens', $sessions );
+		}
 	}
 
 	/**
@@ -115,16 +171,15 @@ class Core {
 	 * Count all the active logins for the current user annd
 	 * check if that exceeds the maximum login limit set.
 	 *
-	 * @param int $user_id User ID.
+	 * @since 1.0.0
 	 *
-	 * @since  1.0.0
-	 * @access public
+	 * @param int $user_id User ID.
 	 *
 	 * @return boolean Limit reached or not
 	 */
-	private function reached_limit( $user_id ) {
+	protected function has_limit_reached( int $user_id ): bool {
 		// If bypassed.
-		if ( $this->bypass( $user_id ) ) {
+		if ( $this->is_bypassed( $user_id ) ) {
 			return false;
 		}
 
@@ -143,12 +198,13 @@ class Core {
 		/**
 		 * Filter hook to change the limit condition.
 		 *
-		 * @param bool $reached Reached.
-		 * @param int  $user_id User ID.
-		 * @param int  $count   Active logins count.
-		 *
 		 * @since 1.3.0
 		 * @since 1.3.1 Added count param.
+		 *
+		 * @param int  $count   Active logins count.
+		 *
+		 * @param bool $reached Reached.
+		 * @param int  $user_id User ID.
 		 */
 		return apply_filters( 'loggedin_reached_limit', $reached, $user_id, $count );
 	}
@@ -160,20 +216,20 @@ class Core {
 	 * You can make use of this filter if you want to bypass
 	 * some users or roles from limit limit.
 	 *
-	 * @param int $user_id User ID.
-	 *
 	 * @since 1.0.0
+	 *
+	 * @param int $user_id User ID.
 	 *
 	 * @return bool
 	 */
-	private function bypass( $user_id ) {
+	protected function is_bypassed( int $user_id ): bool {
 		/**
 		 * Filter hook to bypass the check.
 		 *
-		 * @param bool $bypass  Bypassed.
-		 * @param int  $user_id User ID.
-		 *
 		 * @since 1.0.0
+		 *
+		 * @param int  $user_id User ID.
+		 * @param bool $bypass  Bypassed.
 		 */
 		return (bool) apply_filters( 'loggedin_bypass', false, $user_id );
 	}
@@ -181,23 +237,21 @@ class Core {
 	/**
 	 * Error message text if user active logins count is maximum
 	 *
-	 * @since  1.0.0
-	 * @access public
+	 * @since 1.0.0
 	 *
 	 * @return string Error message
 	 */
-	private function error_message() {
+	protected function limit_error_message(): string {
 		// Error message.
-		$message = __( 'Maximum no. of active logins found for this account. Please logout from another device to continue.', 'loggedin' );
+		$message = __( 'You\'ve reached the maximum number of active logins for this account. Please log out from another device to continue.', 'loggedin' );
 
 		/**
 		 * Filter hook to change the error message.
 		 *
-		 * @param string $message Message.
-		 *
 		 * @since 1.0.0
+		 *
+		 * @param string $message Message.
 		 */
 		return apply_filters( 'loggedin_error_message', $message );
 	}
-
 }
