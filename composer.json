@@ -1,6 +1,6 @@
 {
   "name": "loggedin/loggedin",
-  "description": "Limit number of active logins for a user account in WordPress",
+  "description": "Limit an account to a specific number of simultaneous logins across all devices.",
   "version": "2.0.0",
   "homepage": "https://wordpress.org/plugins/loggedin/",
   "license": "GPL-2.0+",

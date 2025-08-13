@@ -4,7 +4,6 @@
  *
  * @link       https://duckdev.com/products/loggedin-limit-active-logins/
  * @license    http://www.gnu.org/licenses/ GNU General Public License
- * @category   Core
  * @package    Loggedin
  * @subpackage Freemius
  * @author     Joel James <me@joelsays.com>

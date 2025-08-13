@@ -4,7 +4,6 @@
  *
  * @link       https://duckdev.com/products/loggedin-limit-active-logins/
  * @license    http://www.gnu.org/licenses/ GNU General Public License
- * @category   Core
  * @package    Loggedin
  * @subpackage Admin
  * @author     Joel James <me@joelsays.com>
@@ -206,7 +205,7 @@ class Admin {
 		<p class="description">
 			<?php
 			printf(
-				// translators: %s loggedin settings page url.
+			// translators: %s loggedin settings page url.
 				__( 'Loggedin settings have been relocated. <a href="%s">Click here</a> to access the new settings page.', 'loggedin' ),
 				esc_url( admin_url( 'users.php?page=loggedin' ) )
 			);

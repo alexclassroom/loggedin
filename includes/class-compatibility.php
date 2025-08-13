@@ -106,15 +106,6 @@ class Core {
 		if ( 'block' === $logic ) {
 			// Check if limit exceed.
 			if ( $this->has_limit_reached( $user->ID ) ) {
-				/**
-				 * Action hook to trigger when a login is blocked by loggedin.
-				 *
-				 * @since 2.0.0
-				 *
-				 * @param int $user_id User ID.
-				 */
-				do_action( 'loggedin_login_blocked', $user->ID );
-
 				return new WP_Error( 'login_limit_reached', $this->limit_error_message() );
 			}
 		}
@@ -134,15 +125,6 @@ class Core {
 	protected function destroy_all_sessions( int $user_id ) {
 		// Destroy all sessions.
 		WP_Session_Tokens::get_instance( $user_id )->destroy_all();
-
-		/**
-		 * Action hook to trigger when all login sessions of a user are cleared by loggedin.
-		 *
-		 * @since 2.0.0
-		 *
-		 * @param int $user_id User ID.
-		 */
-		do_action( 'loggedin_destroy_all_sessions', $user_id );
 	}
 
 	/**
@@ -181,14 +163,11 @@ class Core {
 			unset( $sessions[ $oldest_token ] );
 			update_user_meta( $user_id, 'session_tokens', $sessions );
 
-			/**
-			 * Action hook to trigger when oldest login session of a user are cleared by loggedin.
-			 *
-			 * @since 2.0.0
-			 *
-			 * @param int $user_id User ID.
-			 */
-			do_action( 'loggedin_destroy_oldest_session', $user_id );
+			WC()->session->set_customer_session_cookie( true );
+			wc_add_notice(
+				__( 'Maximum active login sessions have been exceeded. Your oldest session has been terminated.', 'loggedin' ),
+				'notice'
+			);
 		}
 	}
 
