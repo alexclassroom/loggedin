@@ -3,9 +3,9 @@ Contributors: joelcj91,duckdev
 Tags: login, logout, limit active logins, login limit, concurrent logins
 Donate link: https://paypal.me/JoelCJ
 Requires at least: 4.0
-Tested up to: 6.6
+Tested up to: 6.8
 Stable tag: 2.0.0
-Requires PHP: 5.6
+Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

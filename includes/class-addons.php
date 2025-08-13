@@ -136,7 +136,7 @@ class Addons {
 	 */
 	public function process_license() {
 		// Form data.
-		$data = $_POST['loggedin_licenses'] ?? array();
+		$data = wp_unslash( $_POST['loggedin_licenses'] ?? '' ); // phpcs:ignore
 
 		// We need all these data to continue.
 		if ( ! isset( $data['nonce'], $data['action'], $data['key'], $data['id'] ) ) {
@@ -183,7 +183,7 @@ class Addons {
 			add_settings_error(
 				'loggedin_licenses',
 				$action,
-				'activate' === $action ? __( 'License activated successfully.' ) : __( 'License deactivated successfully.' ),
+				'activate' === $action ? __( 'License activated successfully.', 'loggedin' ) : __( 'License deactivated successfully.', 'loggedin' ),
 				'updated'
 			);
 		}
@@ -203,7 +203,7 @@ class Addons {
 		}
 
 		// Nonce verification first.
-		if ( ! wp_verify_nonce( sanitize_text_field( $_GET['_wpnonce'] ), 'loggedin-addons-refresh' ) ) {
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'loggedin-addons-refresh' ) ) {
 			return;
 		}
 
