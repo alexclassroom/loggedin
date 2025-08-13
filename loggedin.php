@@ -63,6 +63,7 @@ if ( ! function_exists( __NAMESPACE__ . '\\init' ) ) {
 		new Core();
 		new Admin();
 		new Addons();
+		new Compatibility();
 
 		/**
 		 * Action hook to execute after our plugin init.
