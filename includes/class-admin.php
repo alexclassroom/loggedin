@@ -126,9 +126,9 @@ class Admin {
 	 */
 	public function register_settings() {
 		// Register limit settings.
-		//register_setting( 'loggedin', 'loggedin_maximum' );
+		register_setting( 'loggedin', 'loggedin_maximum' );
 		// Register logic settings.
-		//register_setting( 'loggedin', 'loggedin_logic' );
+		register_setting( 'loggedin', 'loggedin_logic' );
 	}
 
 	/**
