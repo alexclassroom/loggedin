@@ -4,7 +4,7 @@ outline: deep
 
 # Installing an Add-on
 
-You can view [the list of available add-ons here](/../addons).
+You can view [the list of available add-ons here](./../addons).
 
 ::: tip Important
 The **Loggedin** plugin must be installed and active for the add-on to work.
