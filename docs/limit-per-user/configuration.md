@@ -2,6 +2,6 @@
 outline: deep
 ---
 
-# Configuring Real-time Logout
+# Configuring Limit Per User
 
 Yet to be published.

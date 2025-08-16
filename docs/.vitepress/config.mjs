@@ -29,11 +29,13 @@ export default defineConfig({
 				link: '/addons',
 			},
 			{
-				text: 'General',
+				text: 'Getting Started',
 				collapsed: false,
 				items: [
-					{ text: 'Installing a Plugin', link: '/general/installing-plugin' },
-					{ text: 'Manually Updating', link: '/general/manually-updating' },
+					{ text: 'Installing Loggedin', link: '/general/installing-loggedin' },
+					{ text: 'Installing an Add-on', link: '/general/installing-add-on' },
+					{ text: 'Updating a Plugin', link: '/general/updating-plugin' },
+					{ text: 'Plugin Settings', link: '/general/plugin-settings' },
 				]
 			},
 			{

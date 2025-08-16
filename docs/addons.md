@@ -6,10 +6,16 @@ outline: deep
 
 Here are the currently available add-ons for Loggedin. Feel free to [contact us](https:://duckdev.com/contact/) with any suggestions or feedback.
 
-## [Real-time Logout](https://checkout.freemius.com/plugin/19616)
+## Real-time Logout
 
-Detect real-time logouts if the user's session ends in the background.
+This add-on detects logouts in real-time and immediately blocks access to a page by forcing a refresh. It's useful for preventing users from exceeding the set limit of simultaneous device logins.
 
-## [Limit Per User](https://checkout.freemius.com/plugin/19329)
+* [Buy Now](https://checkout.freemius.com/plugin/19616)
+* [Documentation](./realtime-logout/configuration)
 
-Limit the number of concurrent logins per user.
+## Limit Per User
+
+This add-on gives you the flexibility to set a specific concurrent login limit for each individual user from their profile page. It is ideal for sites that need to provide different levels of access.
+
+* [Buy Now](https://checkout.freemius.com/plugin/19329)
+* [Documentation](./limit-per-user/configuration)

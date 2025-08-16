@@ -2,15 +2,27 @@
 outline: deep
 ---
 
-# Manually updating a plugin
+# Updating a Plugin
 
-If for some reason you cannot perform automatic updates through your WordPress Admin panel, you can manually update the plugin to the latest stable version. Before you begin, download the latest version of the plugin from wordpress.org.
+You will receive a notification when an update is available, similar to other plugins. You can then update to the latest version directly from your WordPress admin panel.
+
+::: info Note
+A valid license is required for premium add-ons to receive updates.
+:::
+
+If for some reason you cannot perform automatic updates through your WordPress Admin panel, you can manually update the plugin to the latest stable version.
+
+Before you start, download the latest version of the free plugin from wordpress.org or the premium add-on from [your user dashboard](https://users.freemius.com/store/21/).
 
 ## Updating from the WordPress dashboard
+
+Updating via the WordPress Admin panel is a straightforward process.
 
 * Navigate to **WP Admin > Plugins > Add New > Upload**.
 * Browse to the location of the plugin ZIP file on your computer and press “Upload”.
 * Select “Replace current with uploaded” on the confirmation page.
+
+[![Manual Update](/general/manual-update.png)](/general/manual-update.png)
 
 ## Updating a plugin via FTP
 
@@ -24,9 +36,6 @@ To install it via FTP, you will need direct access to your web host's file serve
 
 Following either of these two update methods ensures you will not lose your plugin's configuration settings. These methods are applicable to all plugins.
 
-> [!Note]
-> `your-plugin-name` is a sample name. Don't forget to use your plugin's actual name instead.
-
-::: box
-This is a box.
+::: info Note
+`your-plugin-name` is a sample name. Don't forget to use your plugin's actual name instead.
 :::
