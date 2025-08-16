@@ -24,7 +24,6 @@ pnpm-debug.log*
 *.sw?
 
 # Unwanted config files
-package-lock.json
 composer.lock
 
 # Docs
