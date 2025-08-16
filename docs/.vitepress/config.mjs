@@ -14,6 +14,7 @@ export default defineConfig({
 			},
 		]
 	],
+	base: '/loggedin/',
 	themeConfig: {
 		logo: '/icon.svg',
 
