@@ -17,10 +17,14 @@
   ],
   "license": "GPL-2.0-or-later",
   "scripts": {
-    "pack": "wp-scripts plugin-zip"
+    "pack": "wp-scripts plugin-zip",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
-    "@wordpress/scripts": "^30.21.0"
+    "@wordpress/scripts": "^30.21.0",
+    "vitepress": "^2.0.0-alpha.11"
   },
   "files": [
     "app",
