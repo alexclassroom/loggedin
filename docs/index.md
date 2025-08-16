@@ -9,7 +9,7 @@ hero:
   actions:
     - theme: brand
       text: View Addons
-      link: /general/addons
+      link: /addons
     - theme: alt
       text: Documentation
       link: /general/installing-plugin
