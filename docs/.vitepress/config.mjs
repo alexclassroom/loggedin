@@ -10,12 +10,12 @@ export default defineConfig({
 			'link',
 			{
 				rel: 'icon',
-				href: '/icon.svg',
+				href: '/secured.svg',
 			},
 		]
 	],
 	themeConfig: {
-		logo: '/icon.svg',
+		logo: '/secured.svg',
 
 		nav: [
 			{ text: 'Home', link: '/' },
@@ -33,9 +33,9 @@ export default defineConfig({
 				collapsed: false,
 				items: [
 					{ text: 'Installing Loggedin', link: '/general/installing-loggedin' },
-					{ text: 'Installing an Add-on', link: '/general/installing-add-on' },
-					{ text: 'Updating a Plugin', link: '/general/updating-plugin' },
-					{ text: 'Plugin Settings', link: '/general/plugin-settings' },
+					{ text: 'Installing an add-on', link: '/general/installing-add-on' },
+					{ text: 'Updating a plugin', link: '/general/updating-plugin' },
+					{ text: 'Plugin settings', link: '/general/plugin-settings' },
 				]
 			},
 			{
@@ -51,7 +51,11 @@ export default defineConfig({
 				items: [
 					{ text: 'Configuration', link: '/limit-per-user/configuration' },
 				]
-			}
+			},
+			{
+				text: 'About the author',
+				link: '/about',
+			},
 		],
 
 		socialLinks: [

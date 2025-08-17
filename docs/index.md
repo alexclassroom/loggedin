@@ -14,7 +14,7 @@ hero:
       text: Documentation
       link: /general/installing-loggedin
   image:
-    src: /icon.svg
+    src: /secured.svg
 
 features:
   - title: Content Protection
