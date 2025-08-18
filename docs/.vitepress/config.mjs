@@ -10,12 +10,12 @@ export default defineConfig({
 			'link',
 			{
 				rel: 'icon',
-				href: '/secured.svg',
+				href: '/icon.svg',
 			},
 		]
 	],
 	themeConfig: {
-		logo: '/secured.svg',
+		logo: '/icon.svg',
 
 		nav: [
 			{ text: 'Home', link: '/' },
