@@ -2,7 +2,7 @@
 outline: deep
 ---
 
-# Updating a Plugin
+# Updating a plugin
 
 You will receive a notification when an update is available, similar to other plugins. You can then update to the latest version directly from your WordPress admin panel.
 

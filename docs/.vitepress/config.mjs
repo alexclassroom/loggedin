@@ -35,21 +35,29 @@ export default defineConfig({
 					{ text: 'Installing Loggedin', link: '/general/installing-loggedin' },
 					{ text: 'Installing an add-on', link: '/general/installing-add-on' },
 					{ text: 'Updating a plugin', link: '/general/updating-plugin' },
-					{ text: 'Plugin settings', link: '/general/plugin-settings' },
+				]
+			},
+			{
+				text: 'Loggedin',
+				collapsed: false,
+				items: [
+					{ text: 'General Settings', link: '/loggedin/general-settings' },
+					{ text: 'Manage Sessions', link: '/loggedin/manage-sessions' },
+					{ text: 'Actions & Filters', link: '/loggedin/actions-and-filters' },
 				]
 			},
 			{
 				text: 'Addon - Realtime Logout',
 				collapsed: false,
 				items: [
-					{ text: 'Configuration', link: '/realtime-logout/configuration' },
+					{ text: 'Settings', link: '/realtime-logout/settings' },
 				]
 			},
 			{
 				text: 'Addon - Limit Per User',
 				collapsed: false,
 				items: [
-					{ text: 'Configuration', link: '/limit-per-user/configuration' },
+					{ text: 'Settings', link: '/limit-per-user/settings' },
 				]
 			},
 			{
