@@ -43,7 +43,7 @@ export default defineConfig({
 				items: [
 					{ text: 'General Settings', link: '/loggedin/general-settings' },
 					{ text: 'Manage Sessions', link: '/loggedin/manage-sessions' },
-					{ text: 'Actions & Filters', link: '/loggedin/actions-and-filters' },
+					{ text: 'Available Hooks', link: '/loggedin/available-hooks' },
 				]
 			},
 			{
@@ -79,6 +79,11 @@ export default defineConfig({
 			},
 		],
 
+		editLink: {
+			pattern: 'https://github.com/Joel-James/loggedin/edit/docs/docs/:path',
+			text: 'Edit this page on GitHub',
+		},
+
 		search: {
 			provider: 'local',
 		},
@@ -86,5 +91,7 @@ export default defineConfig({
 		footer: {
 			copyright: `Copyright © ${year}, <a href="/about/">Joel James</a>. Loggedin is not affiliated with the WordPress Foundation.`,
 		},
-	}
+	},
+
+	lastUpdated: true,
 })
