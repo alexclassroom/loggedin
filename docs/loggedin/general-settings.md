@@ -36,5 +36,5 @@ If the concurrent login limit is met, a new successful login will automatically 
 When the login limit is reached, all new login attempts will be blocked. The user must either log out of an existing session or wait for a session to expire before they can log in again.
 
 ::: tip Extensibility
-Third-party plugins or custom code can introduce additional login logic options by utilizing the available WordPress filter hooks. Developers can refer to [the plugin's documentation]() for details on extending this functionality.
+Third-party plugins or custom code can introduce additional login logic options by utilizing the available WordPress filter hooks. Developers can refer to [the plugin's documentation](./actions-and-filters) for details on extending this functionality.
 :::
