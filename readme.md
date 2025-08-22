@@ -1,3 +1,8 @@
+[![Plugin Version](https://img.shields.io/wordpress/plugin/v/loggedin.svg?style=flat-square)](https://wordpress.org/plugins/loggedin/)
+[![License](https://img.shields.io/badge/license-GPL_v2%2B-blue.svg?style=flat-square)](https://opensource.org/license/GPL-2.0)
+[![WordPress Tested](https://img.shields.io/wordpress/v/loggedin.svg?style=flat-square)](https://wordpress.org/plugins/loggedin/)
+[![Build Status](https://img.shields.io/badge/tests-passing-brightgreen.svg?style=flat-square)](https://github.com/Joel-James/loggedin/actions)
+
 # Loggedin - Limit Concurrent Sessions
 
 Loggedin is a lightweight WordPress plugin that lets you easily limit the number of simultaneous active sessions a user can have. This is a crucial feature for membership sites, online courses, and other platforms where you need to prevent users from sharing their accounts.
