@@ -12,15 +12,7 @@ Loggedin is a lightweight WordPress plugin that lets you easily limit the number
 
 ### 📦 Addons
 
-Enhance LoggedIn's functionality with these simple yet powerful add-ons.
-
-* **[Limit Per User](https://loggedin.duckdev.com/addons#limit-per-user)**
-
-For more granular control, the Limit Per User addon allows you to set specific login limits for individual users, overriding the global settings. This is perfect for offering different tiers of access or special privileges.
-
-* **[Real-time Logout](https://loggedin.duckdev.com/addons#real-time-logout)**
-
-This add-on ensures a truly seamless experience by checking for logouts in real time. When a user's session is terminated in the background due to a login limit, the add-on will automatically refresh their page, instantly restricting access.
+There are several add-ons available to make LoggedIn more powerful. [See the add-ons here](https://loggedin.duckdev.com/addons).
 
 ### ❔ Frequently Asked Questions
 
