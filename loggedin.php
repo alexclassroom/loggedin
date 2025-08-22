@@ -4,7 +4,7 @@
  *
  * @package LoggedIn
  *
- * Plugin Name:     Loggedin - Limit Active Logins
+ * Plugin Name:     Loggedin - Limit Concurrent Sessions
  * Plugin URI:      https://duckdev.com/products/loggedin-limit-active-logins/
  * Description:     Limit an account to a specific number of simultaneous logins across all devices.
  * Version:         2.0.0
