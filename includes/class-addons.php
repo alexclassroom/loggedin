@@ -235,6 +235,7 @@ class Addons {
 				'is_premium' => false,
 				'main_file'  => LOGGEDIN_FILE,
 				'public_key' => 'pk_4c8df806d035c90805a97eae5fba5',
+				'has_addons' => true,
 			)
 		);
 
