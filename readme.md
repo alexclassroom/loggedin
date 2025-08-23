@@ -37,3 +37,8 @@ Code contributions, feedback, and feature suggestions are very welcome. [See the
 ## Changelog ##
 
 See the changelog on the [WordPress.org plugin page](https://wordpress.org/plugins/loggedin/changelog/) for Loggedin.
+
+## Useful Links
+
+* [Addons](#)
+* [Documentation](#)
