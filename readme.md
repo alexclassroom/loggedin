@@ -19,26 +19,9 @@ Loggedin is a lightweight WordPress plugin that lets you easily limit the number
 
 There are [several add-ons](https://loggedin.duckdev.com/addons) available to make LoggedIn more powerful.
 
-## FAQ
-
-See the [FAQ on the WordPress.org](https://wordpress.org/plugins/loggedin/#faq-header) plugin page for Loggedin.
-
-## Documentation
-
-See the [detailed documentation](https://loggedin.duckdev.com/).
-
-## Contributing
-
-Code contributions, feedback, and feature suggestions are very welcome. [See the guidelines](https://github.com/Joel-James/loggedin?tab=contributing-ov-file).
-
-> [!NOTE]  
-> GitHub is for bug reports and development-related issues only. For support, please use the [WordPress.org support forums](https://wordpress.org/support/plugin/loggedin/).
-
-## Changelog ##
-
-See the changelog on the [WordPress.org plugin page](https://wordpress.org/plugins/loggedin/changelog/) for Loggedin.
-
 ## Useful Links
 
-* [Addons](#)
-* [Documentation](#)
+* [See the FAQ](https://wordpress.org/plugins/loggedin/#faq-header).
+* [See the documentation](https://loggedin.duckdev.com/).
+* [See the changelog](https://wordpress.org/plugins/loggedin/changelog/).
+* [See the contributing guidelines](https://github.com/Joel-James/loggedin?tab=contributing-ov-file).
