@@ -23,6 +23,9 @@ pnpm-debug.log*
 *.sln
 *.sw?
 
+# Build files
+*.zip
+
 # Unwanted config files
 composer.lock
 
