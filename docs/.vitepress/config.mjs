@@ -33,8 +33,9 @@ export default defineConfig({
 				collapsed: false,
 				items: [
 					{ text: 'Installing Loggedin', link: '/general/installing-loggedin' },
-					{ text: 'Installing an add-on', link: '/general/installing-add-on' },
-					{ text: 'Updating a plugin', link: '/general/updating-plugin' },
+					{ text: 'Installing an Add-on', link: '/general/installing-add-on' },
+					{ text: 'Updating Plugin', link: '/general/updating-plugin' },
+					{ text: 'Managing Licenses', link: '/general/managing-licenses' },
 				]
 			},
 			{
@@ -43,7 +44,7 @@ export default defineConfig({
 				items: [
 					{ text: 'General Settings', link: '/loggedin/general-settings' },
 					{ text: 'Manage Sessions', link: '/loggedin/manage-sessions' },
-					{ text: 'Available Hooks', link: '/loggedin/available-hooks' },
+					{ text: 'Developer Docs', link: '/loggedin/developer-docs' },
 				]
 			},
 			{

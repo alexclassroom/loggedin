@@ -8,11 +8,11 @@ hero:
   tagline: Stop account sharing by limiting active logins from multiple devices.
   actions:
     - theme: brand
+      text: Get Started
+      link: /loggedin/general-settings
+    - theme: alt
       text: View Addons
       link: /addons
-    - theme: alt
-      text: Documentation
-      link: /general/installing-loggedin
   image:
     src: /user-lock.svg
 
