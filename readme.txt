@@ -25,11 +25,11 @@ Loggedin is a lightweight WordPress plugin that lets you easily limit the number
 
 ### 📦 Addons
 
-Enhance LoggedIn's functionality with these simple yet powerful [add-ons](https://loggedin.duckdev.com/addons).
+Enhance LoggedIn's functionality with these simple yet powerful [add-ons](https://duckdev.com/addons/loggedin/).
 
-* **[Limit Per User](https://loggedin.duckdev.com/addons#limit-per-user)**: For more granular control, the Limit Per User addon allows you to set specific login limits for individual users, overriding the global settings. This is perfect for offering different tiers of access or special privileges.
+* **[Limit Per User](https://duckdev.com/addon/limit-per-user/)**: For more granular control, the Limit Per User addon allows you to set specific login limits for individual users, overriding the global settings. This is perfect for offering different tiers of access or special privileges.
 
-* **[Real-time Logout](https://loggedin.duckdev.com/addons#real-time-logout)**: This add-on ensures a truly seamless experience by checking for logouts in real time. When a user's session is terminated in the background due to a login limit, the add-on will automatically refresh their page, instantly restricting access.
+* **[Real-time Logout](https://duckdev.com/addon/real-time-logout/)**: This add-on ensures a truly seamless experience by checking for logouts in real time. When a user's session is terminated in the background due to a login limit, the add-on will automatically refresh their page, instantly restricting access.
 
 ### 🐛 Bug Reports
 
@@ -39,7 +39,7 @@ _Please note: GitHub is for bug reports and development-related issues only. For
 
 == Installation ==
 
-1. Install Loggedin either via the WordPress.org plugin repository or by uploading the files to your server. (See instructions on [how to install Loggedin](https://loggedin.duckdev.com/general/installing-loggedin))
+1. Install Loggedin either via the WordPress.org plugin repository or by uploading the files to your server. (See instructions on [how to install Loggedin](https://docs.duckdev.com/general/installing-plugin))
 2. Activate the plugin.
 3. Go to *Users > Loggedin* to configure it.
 
@@ -57,7 +57,7 @@ Currently, the plugin offers three built-in login logic options:
 * **Logout All**: All other active sessions for the user will be logged out when a new session is started.
 * **Block New**: The new login attempt will be blocked if the user has already reached the maximum number of active sessions.
 
-Additional logic options can be added using third-party plugins or custom code. For more details, [see our documentation here](https://loggedin.duckdev.com/loggedin/general-settings#login-logic).
+Additional logic options can be added using third-party plugins or custom code. For more details, [see our documentation here](https://docs.duckdev.com/loggedin/general-settings#login-logic).
 
 = How long does a login session last? =
 
@@ -122,7 +122,7 @@ add_filter( 'loggedin_bypass', 'loggedin_bypass_roles', 10, 2 );
 
 == Changelog ==
 
-= 2.0.0 (25/08/2025) =
+= 2.0.0 (10/11/2025) =
 
 **📦 New**
 
