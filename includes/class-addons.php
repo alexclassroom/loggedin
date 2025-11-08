@@ -179,11 +179,11 @@ class Addons {
 			// Show error notice.
 			add_settings_error( 'loggedin_licenses', $response->get_error_code(), $response->get_error_message() );
 		} else {
-			// Show success notice.
+			// Show success notice.'
 			add_settings_error(
 				'loggedin_licenses',
 				$action,
-				'activate' === $action ? __( 'License activated successfully.', 'loggedin' ) : __( 'License deactivated successfully.', 'loggedin' ),
+				'activate' === $action ? __( 'Your license key has been activated successfully.', 'loggedin' ) : __( 'Your license key has been deactivated.', 'loggedin' ),
 				'updated'
 			);
 		}
@@ -198,12 +198,12 @@ class Addons {
 	 */
 	public function process_addons_refresh() {
 		// We need all these data to continue.
-		if ( ! isset( $_GET['_wpnonce'], $_GET['loggedin-addons-refresh'] ) ) {
+		if ( ! isset( $_REQUEST['_wpnonce'], $_REQUEST['loggedin-addons-refresh'] ) ) {
 			return;
 		}
 
 		// Nonce verification first.
-		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'loggedin-addons-refresh' ) ) {
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'loggedin-addons-refresh' ) ) {
 			return;
 		}
 
