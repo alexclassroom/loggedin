@@ -126,9 +126,18 @@ class Admin {
 	 */
 	public function register_settings() {
 		// Register limit settings.
-		register_setting( 'loggedin', 'loggedin_maximum' );
+		register_setting(
+			'loggedin',
+			'loggedin_maximum',
+			array( 'sanitize_callback' => 'sanitize_text_field' )
+		);
+
 		// Register logic settings.
-		register_setting( 'loggedin', 'loggedin_logic' );
+		register_setting(
+			'loggedin',
+			'loggedin_logic',
+			array( 'sanitize_callback' => 'sanitize_text_field' )
+		);
 	}
 
 	/**
@@ -205,7 +214,7 @@ class Admin {
 		<p class="description">
 			<?php
 			printf(
-				// translators: Link to loggedin settings page url.
+			// translators: Link to loggedin settings page url.
 				esc_attr__( 'Loggedin settings have been relocated. %1$sClick here%2$s to access the new settings page.', 'loggedin' ),
 				'<a href="' . esc_url( admin_url( 'users.php?page=loggedin' ) ) . '">',
 				'</a>'
@@ -306,7 +315,7 @@ class Admin {
 	protected function get_current_tab(): string {
 		$tabs = array( 'settings', 'addons', 'support' );
 		// phpcs:ignore
-		$tab  = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'settings';
+		$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'settings';
 
 		return in_array( $tab, $tabs, true ) ? $tab : 'settings';
 	}
