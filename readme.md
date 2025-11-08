@@ -17,11 +17,11 @@ Loggedin is a lightweight WordPress plugin that lets you easily limit the number
 
 ## Addons
 
-There are [several add-ons](https://loggedin.duckdev.com/addons) available to make LoggedIn more powerful.
+There are [several add-ons](https://duckdev.com/addons/loggedin/) available to make LoggedIn more powerful.
 
 ## Useful Links
 
 * [See the FAQ](https://wordpress.org/plugins/loggedin/#faq-header).
-* [See the documentation](https://loggedin.duckdev.com/).
+* [See the documentation](https://docs.duckdev.com/loggedin/general-settings).
 * [See the changelog](https://wordpress.org/plugins/loggedin/changelog/).
 * [See the contributing guidelines](https://github.com/Joel-James/loggedin?tab=contributing-ov-file).
