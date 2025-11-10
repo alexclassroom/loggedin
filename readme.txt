@@ -2,7 +2,7 @@
 Contributors: joelcj91,duckdev
 Tags: login, logout, loggedin, limit logins
 Donate link: https://paypal.me/JoelCJ
-Requires at least: 4.0
+Requires at least: 5.0
 Tested up to: 6.8
 Stable tag: 2.0.0
 Requires PHP: 7.4
@@ -133,8 +133,7 @@ add_filter( 'loggedin_bypass', 'loggedin_bypass_roles', 10, 2 );
 **👌 Improvements**
 
 * Coding standards.
-
-* Security fixes.
+* Sanitization.
 
 = 1.3.2 (01/10/2024) =
 
