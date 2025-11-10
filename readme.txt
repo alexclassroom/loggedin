@@ -1,6 +1,6 @@
 === Loggedin - Limit Concurrent Sessions ===
 Contributors: joelcj91,duckdev
-Tags: login, logout, loggedin, limit logins
+Tags: login, logout, limit, sessions, user login
 Donate link: https://paypal.me/JoelCJ
 Requires at least: 5.0
 Tested up to: 6.8
