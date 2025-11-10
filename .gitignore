@@ -28,6 +28,7 @@ pnpm-debug.log*
 
 # Unwanted config files
 composer.lock
+package-lock.json
 
 # Docs
 docs/.vitepress/dist
