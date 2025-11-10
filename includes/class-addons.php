@@ -117,7 +117,8 @@ class Addons {
 
 		// If addons are empty, remove the tab.
 		if ( empty( $addons ) ) {
-			unset( $vars['addons'] );
+			unset( $vars['tab_items']['addons'] );
+			$vars['current_tab'] = 'settings';
 		}
 
 		$vars['addons']            = $addons;

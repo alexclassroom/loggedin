@@ -131,7 +131,7 @@ class Core {
 	 *
 	 * @return void
 	 */
-	protected function destroy_all_sessions( int $user_id ) {
+	protected function destroy_all_sessions( $user_id ) {
 		// Destroy all sessions.
 		WP_Session_Tokens::get_instance( $user_id )->destroy_all();
 
@@ -158,7 +158,7 @@ class Core {
 	 *
 	 * @return void
 	 */
-	protected function destroy_oldest_session( int $user_id ) {
+	protected function destroy_oldest_session( $user_id ) {
 		// Retrieve the raw sessions array directly from user meta.
 		$sessions = get_user_meta( $user_id, 'session_tokens', true );
 		if ( ! is_array( $sessions ) || empty( $sessions ) ) {
@@ -204,7 +204,12 @@ class Core {
 	 *
 	 * @return boolean Limit reached or not
 	 */
-	protected function has_limit_reached( int $user_id ): bool {
+	protected function has_limit_reached( $user_id ): bool {
+		// No user ID, no limit.
+		if ( empty( $user_id ) ) {
+			return false;
+		}
+
 		// If bypassed.
 		if ( $this->is_bypassed( $user_id ) ) {
 			return false;
@@ -248,7 +253,7 @@ class Core {
 	 *
 	 * @return bool
 	 */
-	protected function is_bypassed( int $user_id ): bool {
+	protected function is_bypassed( $user_id ): bool {
 		/**
 		 * Filter hook to bypass the check.
 		 *
