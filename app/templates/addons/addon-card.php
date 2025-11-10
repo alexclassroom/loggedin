@@ -29,7 +29,7 @@ use DuckDev\Loggedin\View;
 	<div class="plugin-card-top">
 		<div class="name column-name">
 			<h3>
-				<a href="<?php echo esc_url( $link ); ?>" target="_blank">
+				<a href="<?php echo esc_url( $homepage ); ?>" target="_blank">
 					<?php echo esc_html( $title ); ?>
 					<img src="<?php echo esc_url( $icon ); ?>" class="plugin-icon" alt="<?php echo esc_html( $title ); ?>">
 				</a>
