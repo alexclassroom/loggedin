@@ -248,7 +248,7 @@ class Admin {
 			$notice_time = get_option( 'loggedin_rating_notice' );
 
 			// If not set, set now and bail.
-			if ( ! $notice_time ) {
+			if ( empty( $notice_time ) ) {
 				// Set to next week.
 				return add_option( 'loggedin_rating_notice', time() + 604800 );
 			}
@@ -260,7 +260,7 @@ class Admin {
 			$dismissed = get_user_meta( $current_user->ID, 'loggedin_rating_notice_dismissed', true );
 
 			// Continue only when allowed.
-			if ( (int) $notice_time >= time() && ! $dismissed ) {
+			if ( (int) $notice_time <= time() && ! $dismissed ) {
 				View::render(
 					'review/notice',
 					array( 'current_user' => $current_user ),
