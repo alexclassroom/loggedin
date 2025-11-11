@@ -15,6 +15,7 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 // Delete all options added by the plugin.
 delete_option( 'loggedin_maximum' );
+delete_option( 'loggedin_logic' );
 delete_option( 'loggedin_rating_notice' );
 
 global $wpdb;
