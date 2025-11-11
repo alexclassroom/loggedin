@@ -4,7 +4,7 @@ Tags: login, logout, limit, sessions, user login
 Donate link: https://paypal.me/JoelCJ
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -121,6 +121,13 @@ add_filter( 'loggedin_bypass', 'loggedin_bypass_roles', 10, 2 );
 2. **Manage Sessions**
 
 == Changelog ==
+
+= 2.0.2 (11/11/2025) =
+
+**🐛 Bug Fixes**
+
+* Nonce verification for Force Logout.
+* Uninstall cleanup.
 
 = 2.0.1 (11/11/2025) =
 
