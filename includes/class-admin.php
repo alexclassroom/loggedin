@@ -60,7 +60,7 @@ class Admin {
 		// If force logout submit.
 		if ( isset( $_REQUEST['loggedin_logout'] ) && isset( $_REQUEST['loggedin_user'] ) ) {
 			// Security check.
-			check_admin_referer( 'general-options' );
+			check_admin_referer( 'loggedin-options' );
 
 			// Get user.
 			$user = get_userdata( (int) $_REQUEST['loggedin_user'] );
@@ -78,7 +78,7 @@ class Admin {
 					'settings_updated', // Override the settings update message.
 					sprintf(
 					// translators: %s User name of the logging out user.
-						__( 'User %s forcefully logged out from all devices.', 'loggedin' ),
+						__( 'The user "%s" was forcefully logged out from all devices.', 'loggedin' ),
 						$user->user_login
 					),
 					'updated'
