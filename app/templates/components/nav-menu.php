@@ -13,9 +13,6 @@
  * @copyright  Copyright (c) 2025, Joel James
  * @package    View
  */
-
-admin_url();
-
 ?>
 <h2 class="nav-tab-wrapper">
 	<?php foreach ( $tab_items as $tab_key => $tab_item ) : ?>
