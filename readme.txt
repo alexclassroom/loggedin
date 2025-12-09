@@ -3,8 +3,8 @@ Contributors: joelcj91,duckdev
 Tags: login, logout, limit, sessions, user login
 Donate link: https://paypal.me/JoelCJ
 Requires at least: 5.0
-Tested up to: 6.8
-Stable tag: 2.0.2
+Tested up to: 6.9
+Stable tag: 2.0.3-beta
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
