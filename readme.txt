@@ -68,13 +68,13 @@ The duration of a login session is determined by WordPress's default settings.
 
 You can customize this duration using the `auth_cookie_expiration` filter. Here's an example of how to set the session to one month:
 
-```php
+<pre lang="php">
 function custom_auth_cookie_expiration( $expire ) {
     return MONTH_IN_SECONDS; // Sets the session to one month
 }
 
 add_filter( 'auth_cookie_expiration', 'custom_auth_cookie_expiration' );
-```
+</pre>
 
 = What if a user has reached the login limit but doesn't know which devices are active? =
 
@@ -91,7 +91,7 @@ Yes, you can bypass the limit for certain users or roles by adding a few lines o
 
 To bypass specific user IDs, use the following code:
 
-```php
+<pre lang="php">
 function loggedin_bypass_users( $bypass, $user_id ) {
     // Add the user IDs you want to bypass to this array.
     $allowed_users = array( 1, 2, 3, 4, 5 );
@@ -99,11 +99,11 @@ function loggedin_bypass_users( $bypass, $user_id ) {
 }
 
 add_filter( 'loggedin_bypass', 'loggedin_bypass_users', 10, 2 );
-```
+</pre>
 
 To bypass specific user roles, use this code:
 
-```php
+<pre lang="php">
 function loggedin_bypass_roles( $prevent, $user_id ) {
     // Add the roles you want to bypass to this array.
     $allowed_roles = array( 'administrator', 'editor' );
@@ -113,7 +113,7 @@ function loggedin_bypass_roles( $prevent, $user_id ) {
 }
 
 add_filter( 'loggedin_bypass', 'loggedin_bypass_roles', 10, 2 );
-```
+</pre>
 
 == Screenshots ==
 
