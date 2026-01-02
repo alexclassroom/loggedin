@@ -4,7 +4,7 @@ Tags: login, logout, limit, sessions, user login
 Donate link: https://paypal.me/JoelCJ
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 2.0.3
+Stable tag: 2.0.4
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,16 @@ add_filter( 'loggedin_bypass', 'loggedin_bypass_roles', 10, 2 );
 
 == Changelog ==
 
+= 2.0.4 (02/01/2026) =
+
+**👌 Improvements**
+
+* Review notice check.
+
+**🐛 Bug Fixes**
+
+* Invalid nonce action prevents notices from being dismissed.
+
 = 2.0.3 (09/12/2025) =
 
 **👌 Improvements**
@@ -206,8 +216,12 @@ add_filter( 'loggedin_bypass', 'loggedin_bypass_roles', 10, 2 );
 
 == Upgrade Notice ==
 
-= 2.0.3 (09/12/2025) =
+= 2.0.4 (02/01/2026) =
 
 **👌 Improvements**
 
-* Remove debug code.
+* Review notice check.
+
+**🐛 Bug Fixes**
+
+* Invalid nonce action prevents notices from being dismissed.
