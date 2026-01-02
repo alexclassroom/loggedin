@@ -36,7 +36,7 @@
 		</a>
 	</p>
 	<p>
-		<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'loggedin_rating', 'dismiss' ) ) ); ?>">
+		<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'loggedin_rating', 'dismiss' ), 'loggedin_rating' ) ); ?>">
 			<?php esc_html_e( 'I already did', 'loggedin' ); ?>
 		</a>
 	</p>
