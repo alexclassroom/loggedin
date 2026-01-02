@@ -280,6 +280,11 @@ class Admin {
 	 * @return void
 	 */
 	public function review_action() {
+		// Only if review action.
+		if ( ! isset( $_REQUEST['loggedin_rating'] ) ) {
+			return;
+		}
+
 		// Only for admins.
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
@@ -290,10 +295,7 @@ class Admin {
 			return;
 		}
 
-		// Get the current review action.
-		$action = $_REQUEST['loggedin_rating'] ?? ''; // phpcs:ignore
-
-		switch ( $action ) {
+		switch ( $_REQUEST['loggedin_rating'] ) {
 			case 'later':
 				// Let's show after another 2 weeks.
 				update_option( 'loggedin_rating_notice', time() + 1209600 );
