@@ -1,54 +1,68 @@
 /**
  * Action creators for the addons store.
  *
- * Plain actions (`setAddons`, `setLicenses`) and the async
- * generators (`refreshAddons`, `manageLicense`) that fetch through
- * the `FETCH` control and dispatch results.
+ * Plain actions (`setItems`, `replaceItem`, `setRefreshing`) and the
+ * async generators (`refresh`, `activateLicense`, `deactivateLicense`)
+ * that hit REST through the `API_FETCH` control and dispatch results.
+ *
+ * The generator return values are `{ success: boolean, error?: string }`
+ * tuples so the License modal can paint the failure reason inline
+ * while still letting the global notice system handle success
+ * confirmations.
  */
 import { dispatch } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 import { __ } from '@wordpress/i18n';
 
-/**
- * Replace the cached addon catalogue + license map.
- *
- * @param {Array}  addons   Addon list returned from the REST endpoint.
- * @param {Object} licenses License entries keyed by addon id.
- */
-export function setAddons( addons, licenses ) {
-	return {
-		type: 'SET_ADDONS',
-		addons,
-		licenses,
-	};
-}
+const BASE = '/loggedin/v1/addons';
+
+// ---------------------------------------------------------------- //
+// Plain action creators.
+// ---------------------------------------------------------------- //
 
 /**
- * Replace just the license map (after an activate / deactivate call).
+ * Replace the cached catalogue with the given array.
  *
- * @param {Object} licenses License entries keyed by addon id.
+ * @param {Array} items Catalogue rows.
  */
-export function setLicenses( licenses ) {
-	return {
-		type: 'SET_LICENSES',
-		licenses,
-	};
-}
+export const setItems = ( items ) => ( { type: 'SET_ITEMS', items } );
 
 /**
- * Bust the server-side Freemius cache and re-fetch the catalogue.
+ * Patch a single catalogue row in place. Used after license actions
+ * so only the affected card flips state.
  *
- * Wrapped in try/catch so a failed refresh shows an error snackbar
- * instead of throwing into the console.
+ * @param {Object} addon Shaped addon row.
  */
-export function* refreshAddons() {
+export const replaceItem = ( addon ) => ( { type: 'REPLACE_ITEM', addon } );
+
+/**
+ * Toggle the "user-triggered refresh in flight" flag.
+ *
+ * @param {boolean} value New value.
+ */
+export const setRefreshing = ( value ) => ( {
+	type: 'SET_REFRESHING',
+	isRefreshing: !! value,
+} );
+
+// ---------------------------------------------------------------- //
+// Thunk-style generators.
+// ---------------------------------------------------------------- //
+
+/**
+ * Force the server-side Freemius cache to rebuild and replace the
+ * cached catalogue with the result.
+ */
+export function* refresh() {
+	yield setRefreshing( true );
+
 	try {
 		const data = yield {
-			type: 'FETCH',
-			request: { path: 'addons?force=1' },
+			type: 'API_FETCH',
+			request: { path: `${ BASE }/refresh`, method: 'POST' },
 		};
 
-		yield setAddons( data?.addons ?? [], data?.licenses ?? {} );
+		yield setItems( Array.isArray( data?.items ) ? data.items : [] );
 
 		dispatch( noticesStore ).createSuccessNotice(
 			__( 'Addons refreshed.', 'loggedin' ),
@@ -57,52 +71,104 @@ export function* refreshAddons() {
 	} catch ( error ) {
 		dispatch( noticesStore ).createErrorNotice(
 			error?.message ||
-				__( 'Failed to refresh addons.', 'loggedin' ),
+				__( 'Could not refresh the addons list.', 'loggedin' ),
 			{ type: 'snackbar' }
 		);
+	} finally {
+		yield setRefreshing( false );
 	}
 }
 
 /**
- * Activate or deactivate a license key for an addon.
+ * Activate a license key against an addon's Freemius client.
  *
- * Resolves to `true` on success, `false` on failure — the caller can
- * use the result to clear a form field on activate, for example.
+ * @param {number} id  Addon Freemius id.
+ * @param {string} key License key.
  *
- * @param {number} id     Addon Freemius id.
- * @param {string} action `'activate'` or `'deactivate'`.
- * @param {string} key    License key (empty when deactivating).
+ * @return {{success: boolean, error?: string}}
  */
-export function* manageLicense( id, action, key ) {
+export function* activateLicense( id, key ) {
 	try {
-		const res = yield {
-			type: 'FETCH',
+		const data = yield {
+			type: 'API_FETCH',
 			request: {
-				path: 'addons/license',
+				path: `${ BASE }/${ encodeURIComponent( id ) }/license`,
 				method: 'POST',
-				data: { id, action, key },
+				data: { key },
 			},
 		};
 
-		if ( res?.licenses ) {
-			yield setLicenses( res.licenses );
+		if ( data?.success ) {
+			yield replaceItem( data.addon );
+			dispatch( noticesStore ).createSuccessNotice(
+				__( 'License activated.', 'loggedin' ),
+				{ type: 'snackbar' }
+			);
+			return { success: true };
 		}
 
-		dispatch( noticesStore ).createSuccessNotice(
-			action === 'activate'
-				? __( 'License activated.', 'loggedin' )
-				: __( 'License deactivated.', 'loggedin' ),
-			{ type: 'snackbar' }
-		);
-
-		return true;
+		return {
+			success: false,
+			error: __(
+				'License activation failed. Please double-check the key and try again.',
+				'loggedin'
+			),
+		};
 	} catch ( error ) {
-		dispatch( noticesStore ).createErrorNotice(
-			error?.message ||
-				__( 'License request failed.', 'loggedin' ),
-			{ type: 'snackbar' }
-		);
+		return {
+			success: false,
+			error:
+				error?.message ||
+				__(
+					'License activation failed. Please try again.',
+					'loggedin'
+				),
+		};
+	}
+}
 
-		return false;
+/**
+ * Deactivate the addon's active license.
+ *
+ * @param {number} id Addon Freemius id.
+ *
+ * @return {{success: boolean, error?: string}}
+ */
+export function* deactivateLicense( id ) {
+	try {
+		const data = yield {
+			type: 'API_FETCH',
+			request: {
+				path: `${ BASE }/${ encodeURIComponent( id ) }/license`,
+				method: 'DELETE',
+			},
+		};
+
+		if ( data?.success ) {
+			yield replaceItem( data.addon );
+			dispatch( noticesStore ).createSuccessNotice(
+				__( 'License deactivated.', 'loggedin' ),
+				{ type: 'snackbar' }
+			);
+			return { success: true };
+		}
+
+		return {
+			success: false,
+			error: __(
+				'License deactivation failed. Please try again.',
+				'loggedin'
+			),
+		};
+	} catch ( error ) {
+		return {
+			success: false,
+			error:
+				error?.message ||
+				__(
+					'License deactivation failed. Please try again.',
+					'loggedin'
+				),
+		};
 	}
 }

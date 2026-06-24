@@ -1,17 +1,18 @@
 <?php
 /**
- * Addons module — Freemius wiring.
+ * Addons module — Freemius wiring + license operations.
  *
  * This module is the bridge between the plugin and the
- * `duckdev/freemius-plugin-licensing` SDK. It is responsible for:
+ * `duckdev/freemius-plugin-licensing` SDK. It owns:
  *
  *   - Building Freemius instances for the parent plugin and each
  *     registered addon (lazily — see {@see maybe_init_freemius()}).
- *   - Surfacing the addon catalogue and per-addon license status to
- *     the REST controller that backs the React Addons tab.
+ *   - Looking up the catalogue / license state.
+ *   - Activating + deactivating license keys.
  *
- * The actual REST routes live in {@see \DuckDev\Loggedin\Api\Addons};
- * this class just owns the SDK state.
+ * The REST routes live in {@see \DuckDev\Loggedin\Api\Addons}; the
+ * shaped catalogue lives in {@see Catalog}. This class is the only
+ * place that talks to the SDK directly.
  *
  * @package DuckDev\Loggedin\Addons
  */
@@ -23,6 +24,7 @@ namespace DuckDev\Loggedin\Addons;
 use DuckDev\Freemius\Freemius;
 use DuckDev\Loggedin\Contracts\Singleton;
 use DuckDev\Loggedin\Plugin;
+use WP_Error;
 
 defined( 'WPINC' ) || die;
 
@@ -41,9 +43,9 @@ final class Addons {
 	 * Register hooks.
 	 *
 	 * The eager init runs on `admin_init` so the SDK can attach its
-	 * own admin-side wiring (notices, settings links). REST requests
-	 * (which don't fire `admin_init`) go through the lazy path in
-	 * {@see maybe_init_freemius()} instead.
+	 * own admin-side wiring (notices, settings links). REST + CLI
+	 * requests (which don't fire `admin_init`) go through the lazy
+	 * path in {@see maybe_init_freemius()} instead.
 	 *
 	 * @since 3.0.0
 	 */
@@ -52,10 +54,25 @@ final class Addons {
 	}
 
 	/**
-	 * Return the Freemius instance for a given addon id.
+	 * Is the SDK ready to talk to Freemius?
 	 *
-	 * Used by `Api\Addons::manage_license()` to look up the SDK
-	 * handle for the addon the request is targeting.
+	 * Returns false when there are no Freemius instances built yet
+	 * AND there's no parent-plugin Freemius id we could build one
+	 * for — i.e. licensing isn't configured. The REST controller
+	 * uses this to surface a clear error instead of a 500.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return bool
+	 */
+	public function is_ready(): bool {
+		$this->maybe_init_freemius();
+
+		return isset( $this->freemius[ Plugin::FREEMIUS_ID ] );
+	}
+
+	/**
+	 * Return the Freemius instance for a given addon id.
 	 *
 	 * @since 3.0.0
 	 *
@@ -70,11 +87,9 @@ final class Addons {
 	}
 
 	/**
-	 * Return the addon catalogue from the Freemius API.
+	 * Raw addon catalogue from the Freemius SDK.
 	 *
-	 * The SDK caches the result for one day by default. Passing
-	 * `$force = true` bypasses both the SDK's cache and any HTTP
-	 * cache layered above it.
+	 * Pass `$force = true` to bypass the SDK's day-long cache.
 	 *
 	 * @since 3.0.0
 	 *
@@ -98,16 +113,12 @@ final class Addons {
 	 * Shape:
 	 *   [
 	 *     <addon_id> => [
-	 *       'key'    => string,   // raw license key (may be empty)
+	 *       'key'    => string,   // raw license key
 	 *       'status' => string,   // Activation::STATUS_* constant
 	 *       'plugin' => array,    // Freemius plugin metadata
 	 *     ],
 	 *     ...
 	 *   ]
-	 *
-	 * Returned alongside the catalogue from the addons REST endpoint
-	 * so the React UI can render each card's activate/deactivate UI
-	 * without a second round trip.
 	 *
 	 * @since 3.0.0
 	 *
@@ -137,12 +148,74 @@ final class Addons {
 	}
 
 	/**
-	 * Lazily build the Freemius instances on first need.
+	 * Public accessor for the registered-addons filter result.
 	 *
-	 * The `admin_init` path covers wp-admin requests; this method
-	 * covers REST + CLI + anywhere else the catalogue is queried.
-	 * Both paths share the same cache, so a request that hits both
-	 * (rare but possible) only builds the instances once.
+	 * The {@see Catalog} service needs this map to decide whether
+	 * each catalogue row is locally installed + registered.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return array<int, array>
+	 */
+	public function get_registered_addons_public(): array {
+		return $this->get_registered_addons();
+	}
+
+	/**
+	 * Activate a license key for the given addon.
+	 *
+	 * Delegates to the addon's Freemius client and returns whatever
+	 * the SDK returns — usually `true` on success or a `WP_Error`
+	 * the REST controller can forward verbatim.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param int    $id  Addon Freemius id.
+	 * @param string $key License key to activate.
+	 *
+	 * @return true|WP_Error
+	 */
+	public function activate_license( int $id, string $key ) {
+		$freemius = $this->freemius_for( $id );
+
+		if ( null === $freemius ) {
+			return new WP_Error(
+				'addon_not_initialized',
+				__( 'Addon not initialized.', 'loggedin' )
+			);
+		}
+
+		$result = $freemius->license()->activate( $key );
+
+		return is_wp_error( $result ) ? $result : true;
+	}
+
+	/**
+	 * Deactivate the stored license key for the given addon.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param int $id Addon Freemius id.
+	 *
+	 * @return true|WP_Error
+	 */
+	public function deactivate_license( int $id ) {
+		$freemius = $this->freemius_for( $id );
+
+		if ( null === $freemius ) {
+			return new WP_Error(
+				'addon_not_initialized',
+				__( 'Addon not initialized.', 'loggedin' )
+			);
+		}
+
+		$result = $freemius->license()->deactivate();
+
+		return is_wp_error( $result ) ? $result : true;
+	}
+
+	/**
+	 * Lazily build the Freemius instances on first need.
 	 *
 	 * @since 3.0.0
 	 *
@@ -185,7 +258,7 @@ final class Addons {
 	}
 
 	/**
-	 * List of addons registered by other plugins.
+	 * List of addons registered by sibling addon plugins.
 	 *
 	 * @since 3.0.0
 	 *
@@ -195,8 +268,8 @@ final class Addons {
 		/**
 		 * Filter the list of registered addons.
 		 *
-		 * Addon plugins should hook here and append themselves so
-		 * the parent plugin can build a Freemius instance for them.
+		 * Addon plugins hook here and append themselves so the
+		 * parent can build a Freemius instance for them.
 		 *
 		 * @since 2.0.0
 		 *

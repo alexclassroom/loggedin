@@ -1,15 +1,20 @@
 /**
- * Single addon card with its license-key form.
+ * Single addon card.
  *
- * Activate / deactivate are dispatched through the addons data store
- * so the catalogue stays in sync after every change.
+ * Card chrome comes from the `@wordpress/components` `Card`
+ * primitives. The body is the flex-grower so the footer stays a
+ * fixed height regardless of description length.
  *
- * @param {Object} props
- * @param {Object} props.addon   Catalogue entry (id, title, link, …).
- * @param {Object} props.license License row for this addon (key, status).
+ * License management lives in a sibling modal — clicking "Manage
+ * license" fires the parent's `onManageLicense(addon)` callback so
+ * the modal can be hoisted to the tab root (keeps focus management
+ * + ARIA announcements clean).
+ *
+ * @param {Object}   props
+ * @param {Object}   props.addon            Decorated addon row from REST.
+ * @param {Function} props.onManageLicense  `(addon) => void`.
  */
-import { useState } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
@@ -18,94 +23,71 @@ import {
 	CardHeader,
 	Flex,
 	FlexItem,
-	TextControl,
 } from '@wordpress/components';
-import useAddons from '../../../hooks/use-addons';
 
-const ACTIVATED = 'activated';
-
-const AddonCard = ( { addon, license } ) => {
-	const { manageLicense } = useAddons();
-
-	const isActive = license.status === ACTIVATED;
-	const [ inputKey, setInputKey ] = useState( license.key || '' );
-	const [ pending, setPending ] = useState( null );
-
-	const run = async ( action ) => {
-		setPending( action );
-
-		const ok = await manageLicense(
-			addon.id,
-			action,
-			action === 'activate' ? inputKey : ''
-		);
-
-		if ( ok && action === 'deactivate' ) {
-			setInputKey( '' );
-		}
-
-		setPending( null );
-	};
+const AddonCard = ( { addon, onManageLicense } ) => {
+	// Purchase CTA — shown when the addon isn't installed locally.
+	const purchaseCta = (
+		<Button
+			__next40pxDefaultSize
+			variant={ addon.is_premium ? 'primary' : 'secondary' }
+			href={ addon.link || addon.homepage || undefined }
+			target="_blank"
+			rel="noopener noreferrer"
+		>
+			{ addon.is_premium
+				? __( 'Buy Now', 'loggedin' )
+				: __( 'Get it', 'loggedin' ) }
+		</Button>
+	);
 
 	return (
-		<Card className="loggedin-addon-card">
+		<Card className="loggedin-addon-card" isRounded size="small">
 			<CardHeader>
 				<strong>{ addon.title }</strong>
-				{ addon.link && (
-					<a
-						href={ addon.link }
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						{ __( 'Learn more', 'loggedin' ) }
-					</a>
+				{ addon.is_active && (
+					<span className="loggedin-addon-status">
+						{ __( 'Active', 'loggedin' ) }
+					</span>
 				) }
 			</CardHeader>
 
 			<CardBody className="loggedin-addon-description">
-				<TextControl
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
-					label={ __( 'License Key', 'loggedin' ) }
-					value={ inputKey }
-					disabled={ isActive }
-					onChange={ setInputKey }
-				/>
-
-				{ isActive && (
-					<p className="description">
-						{ sprintf(
-							// translators: %s addon name.
-							__( '%s is active on this site.', 'loggedin' ),
-							addon.title
-						) }
-					</p>
-				) }
+				{ addon.description && <p>{ addon.description }</p> }
 			</CardBody>
 
 			<CardFooter>
-				<Flex justify="flex-end">
+				<Flex justify="space-between" align="center">
 					<FlexItem>
-						{ isActive ? (
+						{ addon.homepage && (
+							<a
+								href={ addon.homepage }
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								{ __( 'Learn more', 'loggedin' ) }
+							</a>
+						) }
+					</FlexItem>
+					<FlexItem>
+						{ addon.is_active ? (
 							<Button
 								__next40pxDefaultSize
 								variant="secondary"
-								isDestructive
-								isBusy={ pending === 'deactivate' }
-								onClick={ () => run( 'deactivate' ) }
+								onClick={ () => onManageLicense( addon ) }
 							>
-								{ __( 'Deactivate', 'loggedin' ) }
+								{ addon.is_license_active
+									? __(
+											'Manage license',
+											'loggedin'
+									  )
+									: __(
+											'Activate license',
+											'loggedin'
+									  ) }
 							</Button>
 						) : (
-							<Button
-								__next40pxDefaultSize
-								variant="primary"
-								isBusy={ pending === 'activate' }
-								disabled={ ! inputKey }
-								onClick={ () => run( 'activate' ) }
-							>
-								{ __( 'Activate', 'loggedin' ) }
-							</Button>
+							purchaseCta
 						) }
 					</FlexItem>
 				</Flex>

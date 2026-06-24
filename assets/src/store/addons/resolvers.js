@@ -4,37 +4,35 @@
  * `@wordpress/data` triggers a resolver the first time a selector is
  * called for a given set of arguments. The resolver runs its side
  * effects (a REST fetch), dispatches actions to populate state, and
- * is then never called again unless the cache is invalidated via
- * `invalidateResolution`.
+ * is then never called again unless the cache is invalidated.
  *
- * We *always* dispatch `setAddons`, even on failure — without this
- * the `hasFinishedResolution` flag also stays false and the React UI
- * is stuck on a spinner. On failure we dispatch empty arrays and an
+ * We *always* dispatch `setItems`, even on failure — without this
+ * `hasFinishedResolution` also stays false and the React UI is
+ * stuck on a spinner. On failure we dispatch an empty array and an
  * error snackbar so the user understands why the catalogue is empty.
  */
 import { dispatch } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 import { __ } from '@wordpress/i18n';
-import { setAddons } from './actions';
+import { setItems } from './actions';
 
 /**
- * Resolver paired with `getAddons` — fetches the catalogue + license
- * map on first read.
+ * Resolver paired with `getItems` — fetches the catalogue on first
+ * read.
  */
-export function* getAddons() {
+export function* getItems() {
 	try {
 		const data = yield {
-			type: 'FETCH',
-			request: { path: 'addons' },
+			type: 'API_FETCH',
+			request: { path: '/loggedin/v1/addons' },
 		};
 
-		yield setAddons( data?.addons ?? [], data?.licenses ?? {} );
+		yield setItems( Array.isArray( data?.items ) ? data.items : [] );
 	} catch ( error ) {
-		yield setAddons( [], {} );
+		yield setItems( [] );
 
 		dispatch( noticesStore ).createErrorNotice(
-			error?.message ||
-				__( 'Failed to load addons.', 'loggedin' ),
+			error?.message || __( 'Failed to load addons.', 'loggedin' ),
 			{ type: 'snackbar' }
 		);
 	}

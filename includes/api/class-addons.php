@@ -2,14 +2,22 @@
 /**
  * Addons REST controller.
  *
- * Two routes:
+ * Surfaces the addon catalogue and per-addon license operations to
+ * the React Addons tab. Same route shape as the 404-to-301 plugin so
+ * the React store can be lifted between the two projects without
+ * rewiring paths:
  *
- *   GET  /loggedin/v1/addons              List catalogue + license map.
- *   POST /loggedin/v1/addons/license      Activate / deactivate a license.
+ *   GET    /loggedin/v1/addons                 — list catalogue.
+ *   POST   /loggedin/v1/addons/refresh         — bust SDK cache.
+ *   POST   /loggedin/v1/addons/{id}/license    — activate.
+ *   DELETE /loggedin/v1/addons/{id}/license    — deactivate.
  *
- * Both are backed by {@see \DuckDev\Loggedin\Addons\Addons}. The
- * controller is a thin transport layer — request validation here,
- * everything else delegated to the Addons module.
+ * `{id}` is the addon's Freemius id — an integer matching the `id`
+ * field on every catalogue row.
+ *
+ * The controller is a thin HTTP wrapper; all domain logic lives in
+ * {@see \DuckDev\Loggedin\Addons\Catalog} and
+ * {@see \DuckDev\Loggedin\Addons\Addons}.
  *
  * @package DuckDev\Loggedin\Api
  */
@@ -19,6 +27,7 @@ declare( strict_types = 1 );
 namespace DuckDev\Loggedin\Api;
 
 use DuckDev\Loggedin\Addons\Addons as Addons_Module;
+use DuckDev\Loggedin\Addons\Catalog;
 use DuckDev\Loggedin\Contracts\Singleton;
 use WP_Error;
 use WP_REST_Request;
@@ -41,7 +50,7 @@ final class Addons extends Endpoint {
 	}
 
 	/**
-	 * Register the two `/addons` routes.
+	 * Register the four addons routes.
 	 *
 	 * @since 3.0.0
 	 *
@@ -52,124 +61,170 @@ final class Addons extends Endpoint {
 			$this->namespace,
 			'/addons',
 			array(
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'list_addons' ),
-				'permission_callback' => array( $this, 'permission_check' ),
-				'args'                => array(
-					'force' => array(
-						'type'    => 'boolean',
-						'default' => false,
-					),
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'list_items' ),
+					'permission_callback' => array( $this, 'permission_check' ),
 				),
 			)
 		);
 
 		register_rest_route(
 			$this->namespace,
-			'/addons/license',
+			'/addons/refresh',
 			array(
-				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => array( $this, 'manage_license' ),
-				'permission_callback' => array( $this, 'permission_check' ),
-				'args'                => array(
-					'id'     => array(
-						'type'     => 'integer',
-						'required' => true,
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'refresh' ),
+					'permission_callback' => array( $this, 'permission_check' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/addons/(?P<id>\d+)/license',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'activate_license' ),
+					'permission_callback' => array( $this, 'permission_check' ),
+					'args'                => array(
+						'key' => array(
+							'type'     => 'string',
+							'required' => true,
+						),
 					),
-					'action' => array(
-						'type'     => 'string',
-						'enum'     => array( 'activate', 'deactivate' ),
-						'required' => true,
-					),
-					'key'    => array(
-						'type'    => 'string',
-						'default' => '',
-					),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'deactivate_license' ),
+					'permission_callback' => array( $this, 'permission_check' ),
 				),
 			)
 		);
 	}
 
 	/**
-	 * GET handler — catalogue + license map.
+	 * GET /addons — shaped catalogue.
 	 *
-	 * The `force` query parameter bypasses the SDK's day-long cache
-	 * and bumps to a live API hit. Used by the React refresh button.
+	 * Uses the SDK's day-long cache. Response body shape is
+	 * `{ items: [...] }`, matching what 404-to-301 returns so the
+	 * React store can be a near-direct copy.
 	 *
 	 * @since 3.0.0
 	 *
-	 * @param WP_REST_Request $request Incoming request.
+	 * @param WP_REST_Request $request Unused.
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function list_addons( WP_REST_Request $request ): WP_REST_Response {
+	public function list_items( WP_REST_Request $request ): WP_REST_Response {
+		unset( $request );
+
+		return new WP_REST_Response(
+			array( 'items' => Catalog::instance()->items( false ) ),
+			200
+		);
+	}
+
+	/**
+	 * POST /addons/refresh — bypass the SDK cache and re-fetch.
+	 *
+	 * The SDK rate-limits its own remote requests; repeated clicks
+	 * will simply return the last-known catalogue unchanged until
+	 * the rate-limit window expires.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param WP_REST_Request $request Unused.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function refresh( WP_REST_Request $request ): WP_REST_Response {
+		unset( $request );
+
+		return new WP_REST_Response(
+			array( 'items' => Catalog::instance()->items( true ) ),
+			200
+		);
+	}
+
+	/**
+	 * POST /addons/{id}/license — activate a license key.
+	 *
+	 * Returns the fresh decorated catalogue row alongside the
+	 * success flag so the React store can patch the matching card
+	 * in one round-trip.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param WP_REST_Request $request REST request — captures `id`
+	 *                                 and `key`.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function activate_license( WP_REST_Request $request ) {
 		$addons = Addons_Module::instance();
-		$force  = (bool) $request->get_param( 'force' );
+
+		if ( ! $addons->is_ready() ) {
+			return new WP_Error(
+				'rest_no_freemius',
+				__( 'Licensing is not configured.', 'loggedin' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$id  = (int) $request['id'];
+		$key = sanitize_text_field( (string) $request->get_param( 'key' ) );
+
+		$result = $addons->activate_license( $id, $key );
+
+		if ( is_wp_error( $result ) ) {
+			$result->add_data( array( 'status' => 400 ) );
+			return $result;
+		}
 
 		return new WP_REST_Response(
 			array(
-				'addons'   => $addons->get_addons( $force ),
-				'licenses' => $addons->get_license_items(),
+				'success' => true,
+				'addon'   => Catalog::instance()->find( $id ),
 			),
 			200
 		);
 	}
 
 	/**
-	 * POST handler — activate / deactivate an addon license.
-	 *
-	 * Returns the refreshed license map on success so the React UI
-	 * can re-render in one round trip; returns a 4xx `WP_Error` on
-	 * any failure (missing key on activate, unknown addon id, SDK
-	 * rejection).
+	 * DELETE /addons/{id}/license — deactivate the active license.
 	 *
 	 * @since 3.0.0
 	 *
-	 * @param WP_REST_Request $request Incoming request.
+	 * @param WP_REST_Request $request REST request.
 	 *
-	 * @return WP_Error|WP_REST_Response
+	 * @return WP_REST_Response|WP_Error
 	 */
-	public function manage_license( WP_REST_Request $request ) {
-		$id     = (int) $request->get_param( 'id' );
-		$action = (string) $request->get_param( 'action' );
-		$key    = sanitize_text_field( (string) $request->get_param( 'key' ) );
+	public function deactivate_license( WP_REST_Request $request ) {
+		$addons = Addons_Module::instance();
 
-		if ( 'activate' === $action && '' === $key ) {
+		if ( ! $addons->is_ready() ) {
 			return new WP_Error(
-				'missing_license_key',
-				__( 'License key is required to activate.', 'loggedin' ),
+				'rest_no_freemius',
+				__( 'Licensing is not configured.', 'loggedin' ),
 				array( 'status' => 400 )
 			);
 		}
 
-		$addons   = Addons_Module::instance();
-		$freemius = $addons->freemius_for( $id );
+		$id     = (int) $request['id'];
+		$result = $addons->deactivate_license( $id );
 
-		if ( null === $freemius ) {
-			return new WP_Error(
-				'addon_not_initialized',
-				__( 'Addon not initialized.', 'loggedin' ),
-				array( 'status' => 404 )
-			);
-		}
-
-		$response = 'activate' === $action
-			? $freemius->license()->activate( $key )
-			: $freemius->license()->deactivate();
-
-		if ( is_wp_error( $response ) ) {
-			// Surface the SDK's error code / message verbatim and
-			// annotate with a 4xx status so the JS layer can branch
-			// on the response.
-			$response->add_data( array( 'status' => 400 ) );
-
-			return $response;
+		if ( is_wp_error( $result ) ) {
+			$result->add_data( array( 'status' => 400 ) );
+			return $result;
 		}
 
 		return new WP_REST_Response(
 			array(
-				'success'  => true,
-				'licenses' => $addons->get_license_items(),
+				'success' => true,
+				'addon'   => Catalog::instance()->find( $id ),
 			),
 			200
 		);

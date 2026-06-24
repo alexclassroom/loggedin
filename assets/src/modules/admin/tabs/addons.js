@@ -1,23 +1,45 @@
 /**
  * Addons tab body.
  *
- * Lists the addon catalogue in a responsive grid of `AddonCard`s. The
- * catalogue and license map come from the `loggedin/addons` data
- * store via {@see useAddons}; the first render triggers the resolver
- * that fetches both from the REST API.
+ * Renders the responsive grid of addon cards plus a single hoisted
+ * License Modal. Hoisting the modal here (rather than per-card) keeps
+ * focus management clean and means there's only ever one modal in
+ * the DOM at a time.
  *
- * The "Refresh" button bypasses the resolver cache and re-fetches
- * with `force=1`, which also busts the server-side Freemius cache.
+ * Data flow: `useAddons` → store → REST. The first render triggers
+ * the store's `getItems` resolver which fetches
+ * `/loggedin/v1/addons` and populates the catalogue.
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Flex, Spinner } from '@wordpress/components';
+import { useState } from '@wordpress/element';
+import { Button, Flex, FlexItem, Spinner } from '@wordpress/components';
 import useAddons from '../../../hooks/use-addons';
 import AddonCard from '../components/addon-card';
+import LicenseModal from '../components/license-modal';
 
 const Addons = () => {
-	const { addons, licenses, hasLoaded, refreshAddons } = useAddons();
+	const {
+		items,
+		isLoading,
+		isRefreshing,
+		refresh,
+		activateLicense,
+		deactivateLicense,
+	} = useAddons();
 
-	if ( ! hasLoaded ) {
+	// Currently-managed addon id, or `null` when the modal is
+	// closed. We re-derive the live row from `items` on each render
+	// so a successful (de)activation patches the modal title /
+	// button label without forcing it to re-open.
+	const [ managingId, setManagingId ] = useState( null );
+	const managingAddon =
+		managingId !== null
+			? items.find(
+					( addon ) => Number( addon.id ) === Number( managingId )
+			  )
+			: null;
+
+	if ( isLoading ) {
 		return (
 			<div className="loggedin-page-loader">
 				<Spinner />
@@ -30,29 +52,47 @@ const Addons = () => {
 			<Flex
 				className="loggedin-addons-toolbar"
 				justify="flex-end"
+				align="center"
 			>
-				<Button
-					__next40pxDefaultSize
-					variant="secondary"
-					icon="update"
-					onClick={ refreshAddons }
-				>
-					{ __( 'Refresh Addons', 'loggedin' ) }
-				</Button>
+				<FlexItem>
+					<Button
+						__next40pxDefaultSize
+						variant="secondary"
+						icon="update"
+						onClick={ refresh }
+						isBusy={ isRefreshing }
+						disabled={ isRefreshing }
+					>
+						{ isRefreshing
+							? __( 'Refreshing…', 'loggedin' )
+							: __( 'Refresh Addons', 'loggedin' ) }
+					</Button>
+				</FlexItem>
 			</Flex>
 
-			{ addons.length === 0 ? (
+			{ items.length === 0 ? (
 				<p>{ __( 'No addons available.', 'loggedin' ) }</p>
 			) : (
 				<div className="loggedin-addons-grid">
-					{ addons.map( ( addon ) => (
+					{ items.map( ( addon ) => (
 						<AddonCard
 							key={ addon.id }
 							addon={ addon }
-							license={ licenses[ addon.id ] || {} }
+							onManageLicense={ ( a ) =>
+								setManagingId( a.id )
+							}
 						/>
 					) ) }
 				</div>
+			) }
+
+			{ managingAddon && (
+				<LicenseModal
+					addon={ managingAddon }
+					onActivate={ activateLicense }
+					onDeactivate={ deactivateLicense }
+					onClose={ () => setManagingId( null ) }
+				/>
 			) }
 		</>
 	);

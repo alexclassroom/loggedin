@@ -3,23 +3,23 @@
  */
 
 /**
- * Return the cached addon catalogue.
+ * Return the cached catalogue items.
  *
- * The first invocation triggers the `getAddons` resolver, which
- * fetches the catalogue from the REST API and dispatches
- * `setAddons`. Subsequent reads return the cached array.
+ * The first invocation triggers the `getItems` resolver, which
+ * fetches the catalogue from the REST API and dispatches `setItems`.
+ * Subsequent reads return the cached array.
  *
  * @param {Object} state Store state.
  */
-export function getAddons( state ) {
-	return state.addons;
+export function getItems( state ) {
+	return state.items;
 }
 
 /**
- * Return the license map keyed by addon id.
+ * Is a user-triggered refresh currently in flight?
  *
  * @param {Object} state Store state.
  */
-export function getLicenses( state ) {
-	return state.licenses;
+export function isRefreshing( state ) {
+	return state.isRefreshing;
 }

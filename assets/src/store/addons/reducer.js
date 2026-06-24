@@ -3,35 +3,37 @@
  *
  * State shape:
  *   {
- *     addons:   Array<{ id, title, link, ... }>   // catalogue
- *     licenses: Record<addonId, { key, status }>  // license rows
+ *     items:        Array<Addon>   // shaped catalogue rows from REST
+ *     isRefreshing: boolean        // user-triggered refresh in flight
  *   }
  *
- * We deliberately don't track a `loaded` flag here — `@wordpress/data`
- * already exposes per-selector resolution state via
- * `hasFinishedResolution()`, so duplicating it in the reducer is
- * error-prone (it's easy to forget to flip the flag on the failure
- * path and end up with a spinner that never resolves).
+ * We deliberately don't track an initial-load flag here —
+ * `@wordpress/data` already exposes per-selector resolution state
+ * via `hasFinishedResolution()`, so duplicating it in the reducer
+ * is error-prone (easy to forget to flip it on the failure path).
  */
 const DEFAULT_STATE = {
-	addons: [],
-	licenses: {},
+	items: [],
+	isRefreshing: false,
 };
 
 const reducer = ( state = DEFAULT_STATE, action ) => {
 	switch ( action.type ) {
-		case 'SET_ADDONS':
+		case 'SET_ITEMS':
+			return { ...state, items: action.items };
+
+		case 'REPLACE_ITEM':
 			return {
 				...state,
-				addons: action.addons,
-				licenses: action.licenses,
+				items: state.items.map( ( item ) =>
+					Number( item.id ) === Number( action.addon?.id )
+						? action.addon
+						: item
+				),
 			};
 
-		case 'SET_LICENSES':
-			return {
-				...state,
-				licenses: action.licenses,
-			};
+		case 'SET_REFRESHING':
+			return { ...state, isRefreshing: !! action.isRefreshing };
 
 		default:
 			return state;
