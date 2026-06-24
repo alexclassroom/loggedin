@@ -26,7 +26,7 @@
 			<p>
 				<input
 					type="number"
-					name="loggedin_maximum"
+					name="loggedin_settings[maximum]"
 					id="loggedin_maximum"
 					min="1"
 					value="<?php echo intval( $login_maximum ); ?>"
@@ -47,7 +47,7 @@
 				<p>
 					<input
 						type="radio"
-						name="loggedin_logic"
+						name="loggedin_settings[logic]"
 						id="loggedin_logic"
 						value="<?php echo esc_attr( $logic ); ?>"
 						<?php checked( $login_logic, $logic ); ?>
