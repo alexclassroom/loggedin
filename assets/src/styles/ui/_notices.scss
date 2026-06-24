@@ -1,0 +1,15 @@
+/*
+ * Snackbar notice list — bottom-left of the viewport.
+ *
+ * Lifted above the sticky footer (`z-index: 11`) so the "Settings
+ * saved" snackbar that fires from the footer Save button isn't hidden
+ * behind it.
+ */
+.loggedin-wrap {
+	.loggedin-notices {
+		position: fixed;
+		bottom: 1rem;
+		left: 1rem;
+		z-index: 11;
+	}
+}

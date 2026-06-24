@@ -1,0 +1,22 @@
+/*
+ * Sticky save bar that hangs at the bottom of the Settings tab.
+ *
+ * `position: sticky` keeps it pinned to the viewport bottom while
+ * the user scrolls a long form, but it still flows in the document
+ * so it cannot overlap content above it.
+ */
+.loggedin-wrap {
+	.loggedin-footer {
+		position: sticky;
+		bottom: 1rem;
+		z-index: 10;
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 1.5rem;
+		padding: .75rem 1rem;
+		background: #fff;
+		border: 1px solid #dcdcde;
+		border-radius: 4px;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, .05);
+	}
+}

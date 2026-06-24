@@ -83,10 +83,16 @@ final class Admin {
 	}
 
 	/**
-	 * Render the React mount-point.
+	 * Render the React mount point.
+	 *
+	 * The bundle's entry (`assets/src/admin.js`) looks for
+	 * `#loggedin-admin` and bails silently if it's missing. The
+	 * outer `.wrap` keeps WordPress admin notices positioned the way
+	 * core expects; the inner `.loggedin-wrap` is the root selector
+	 * every plugin stylesheet hangs its rules under.
 	 */
 	public function render_page(): void {
-		echo '<div class="wrap"><div id="loggedin-admin"></div></div>';
+		echo '<div class="wrap"><div id="loggedin-admin" class="loggedin-wrap"></div></div>';
 	}
 
 	/**

@@ -1,24 +1,12 @@
-.loggedin-app {
-	max-width: 920px;
-	margin: 20px 0;
-
-	&__header {
-		margin-bottom: 16px;
-
-		h1 {
-			margin: 0;
-			font-size: 22px;
-			font-weight: 600;
-		}
-	}
-
-	&__tabs {
-		.components-tab-panel__tabs {
-			border-bottom: 1px solid #dcdcde;
-		}
-	}
-
-	&__panel {
-		padding-top: 20px;
-	}
-}
+/*
+ * Admin bundle stylesheet.
+ *
+ * Imports the page-shell partials. New surface-area styles get a new
+ * partial under `ui/` rather than being inlined here so the entry
+ * stays a single index.
+ */
+@use 'ui/page-header';
+@use 'ui/page-body';
+@use 'ui/footer';
+@use 'ui/addons';
+@use 'ui/notices';

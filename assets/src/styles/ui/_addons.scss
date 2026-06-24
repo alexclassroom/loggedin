@@ -1,0 +1,34 @@
+/*
+ * Addons tab layout.
+ *
+ * `loggedin-addons-grid` is an auto-fill grid with a 320px minimum
+ * column width — cards expand to fill the row and wrap to a new line
+ * once the viewport can't fit another column.
+ *
+ * Card body uses `flex: 1` so all cards in a row are the same height
+ * regardless of how much text each addon's description carries.
+ */
+.loggedin-wrap {
+	.loggedin-addons-toolbar {
+		margin-bottom: 1rem;
+	}
+
+	.loggedin-addons-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+		gap: 1rem;
+	}
+
+	.loggedin-addon-card {
+		display: flex;
+		flex-direction: column;
+
+		.loggedin-addon-description {
+			flex: 1;
+		}
+	}
+
+	.loggedin-link-row {
+		margin-top: .75rem;
+	}
+}

@@ -1,0 +1,23 @@
+/*
+ * Main content container.
+ *
+ * Two widths: a narrow column (default, suits forms) and a wide
+ * responsive column for tabs that hold grids of cards (Addons).
+ */
+.loggedin-wrap {
+	.loggedin-page-body {
+		max-width: 780px;
+		margin: 0 auto 2rem;
+		padding: 0 1rem;
+
+		&--wide {
+			max-width: min(calc(100vw - 48px), 1400px);
+		}
+	}
+
+	.loggedin-page-loader {
+		display: flex;
+		justify-content: center;
+		padding: 3rem 0;
+	}
+}
