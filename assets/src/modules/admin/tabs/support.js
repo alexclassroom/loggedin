@@ -1,31 +1,46 @@
 /**
  * Support tab body.
  *
- * Two `PanelBody` blocks: one with channels for getting help, one with
- * the author's links. Each is rendered as a row of secondary buttons
- * via the local `LinkRow` helper.
+ * Two `PanelBody` blocks: one with channels for getting help, one
+ * with the author's links. Each is rendered as a row of secondary
+ * buttons via the local {@see LinkRow} helper.
+ *
+ * The link arrays are module-level constants — they don't depend on
+ * runtime state, so re-deriving them on each render would be wasted
+ * work. Editing them only requires a single-file change.
  */
 import { __ } from '@wordpress/i18n';
 import { Button, Flex, FlexItem, PanelBody } from '@wordpress/components';
 
+/**
+ * Channels for getting product help. Each entry maps to a single
+ * `<Button>` in the first link row.
+ *
+ * @type {Array<{ href: string, icon: string, label: string }>}
+ */
 const SUPPORT_LINKS = [
+	{
+		href: 'https://docs.duckdev.com/loggedin/',
+		icon: 'admin-page',
+		label: __( 'Documentation', 'loggedin' ),
+	},
 	{
 		href: 'https://wordpress.org/support/plugin/loggedin/',
 		icon: 'groups',
 		label: __( 'Support Forums', 'loggedin' ),
 	},
 	{
-		href: 'https://duckdev.com/products/loggedin-limit-active-logins/',
-		icon: 'admin-page',
-		label: __( 'Product Page', 'loggedin' ),
-	},
-	{
-		href: 'https://github.com/Joel-James/loggedin/issues',
-		icon: 'editor-help',
-		label: __( 'Report an Issue', 'loggedin' ),
+		href: 'https://duckdev.com/contact/',
+		icon: 'superhero',
+		label: __( 'Priority Support', 'loggedin' ),
 	},
 ];
 
+/**
+ * Author / project links shown in the second link row.
+ *
+ * @type {Array<{ href: string, icon: string, label: string }>}
+ */
 const AUTHOR_LINKS = [
 	{
 		href: 'https://duckdev.com/about/',
@@ -39,6 +54,18 @@ const AUTHOR_LINKS = [
 	},
 ];
 
+/**
+ * Horizontal row of secondary buttons rendered from a `links` array.
+ *
+ * Wraps in a `<Flex wrap>` so long rows reflow on narrow viewports
+ * instead of overflowing the panel. Each button opens its link in a
+ * new tab — these are all external destinations, and we don't want
+ * the user to lose their settings tab state by navigating away.
+ *
+ * @param {Object} props
+ * @param {Array<{ href: string, icon: string, label: string }>} props.links
+ *        Link descriptors to render.
+ */
 const LinkRow = ( { links } ) => (
 	<Flex className="loggedin-link-row" gap={ 2 } justify="flex-start" wrap>
 		{ links.map( ( link ) => (
@@ -58,6 +85,9 @@ const LinkRow = ( { links } ) => (
 	</Flex>
 );
 
+/**
+ * The tab itself — two panels of links + a paragraph of context.
+ */
 const Support = () => (
 	<>
 		<PanelBody
@@ -79,7 +109,7 @@ const Support = () => (
 		>
 			<p>
 				{ __(
-					"Hey, I'm Joel James — the developer behind Loggedin. Find more of my work below.",
+					"Hey, I'm Joel James, a Software Engineer based in Kerala, India. I'm passionate about open source and dedicate a lot of my time to contributing to it. If you like this plugin, I'd encourage you to check out my other WordPress plugins as well!",
 					'loggedin'
 				) }
 			</p>

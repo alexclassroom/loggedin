@@ -7,10 +7,10 @@
  * flag. Closing the modal (cancel button or backdrop click) calls
  * `onClose` without sending anything to the server.
  *
- * All server calls go through the `onActivate` / `onDeactivate` props
- * which are bound at the page level by {@see useAddons}. The result
- * of the call decides whether the modal closes (success) or stays
- * open with an inline error notice (failure).
+ * All server calls go through the `onActivate` / `onDeactivate`
+ * props which are bound at the page level by {@see useAddons}. The
+ * result decides whether the modal closes (success) or stays open
+ * with an inline error notice (failure).
  *
  * @param {Object}   props
  * @param {Object}   props.addon         Decorated addon row.
@@ -36,28 +36,47 @@ const LicenseModal = ( {
 	onDeactivate,
 	onClose,
 } ) => {
+	// Local input value. Seeded from the stored license key so the
+	// field round-trips an existing value cleanly (and shows the
+	// stored key — masked by the disabled state — on a deactivate
+	// flow).
 	const [ key, setKey ] = useState( addon.license_key || '' );
+
+	// In-flight flag for the primary button — gates double-clicks
+	// and drives the busy spinner.
 	const [ isWorking, setIsWorking ] = useState( false );
+
+	// Inline error rendered above the input. Cleared on each new
+	// submit attempt so stale messages don't linger after the user
+	// fixes the issue.
 	const [ error, setError ] = useState( '' );
 
 	// Keep the local input in sync if the parent re-renders the
-	// modal with a different stored value (e.g. after a successful
-	// activation patches the catalogue row).
+	// modal with a different stored value — for example, after a
+	// successful activation patches the catalogue row from
+	// elsewhere in the React tree.
 	useEffect( () => {
 		setKey( addon.license_key || '' );
 	}, [ addon.license_key ] );
 
 	/**
-	 * Single button handler — read `is_license_active` each click so
-	 * the action / label never drift.
+	 * Primary-button click handler.
+	 *
+	 * Reads `addon.is_license_active` afresh on every click so the
+	 * action / label never drift when the addon row updates
+	 * between renders. Returns early on any of three guards:
+	 *
+	 *   1. A previous click is still in flight.
+	 *   2. We're about to activate with an empty key.
+	 *   3. (implicit) The dispatched action resolves with `success`,
+	 *      in which case we close instead of falling through to the
+	 *      error branch.
 	 */
 	const handleSubmit = async () => {
 		if ( isWorking ) {
 			return;
 		}
 
-		// Guard the empty-key activate path up front so we don't
-		// waste a round-trip.
 		if ( ! addon.is_license_active && ! key.trim() ) {
 			setError( __( 'Enter a license key first.', 'loggedin' ) );
 			return;
@@ -77,6 +96,9 @@ const LicenseModal = ( {
 			return;
 		}
 
+		// Failure path — surface whatever message the dispatched
+		// action returned, with a generic fallback when none came
+		// through.
 		setError(
 			result?.error ||
 				__( 'Something went wrong. Please try again.', 'loggedin' )
@@ -106,6 +128,8 @@ const LicenseModal = ( {
 					__nextHasNoMarginBottom
 					label={ __( 'License Key', 'loggedin' ) }
 					value={ key }
+					// Read-only once a license is active — deactivate
+					// first to change the key.
 					disabled={ addon.is_license_active || isWorking }
 					onChange={ setKey }
 				/>
@@ -129,6 +153,7 @@ const LicenseModal = ( {
 									? 'secondary'
 									: 'primary'
 							}
+							// Deactivate is the destructive action.
 							isDestructive={ addon.is_license_active }
 							isBusy={ isWorking }
 							onClick={ handleSubmit }

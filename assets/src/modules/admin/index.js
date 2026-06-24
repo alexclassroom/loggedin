@@ -2,12 +2,13 @@
  * Admin app root.
  *
  * Mounts the page header (with the tab nav), the active tab body, the
- * sticky footer (only on Settings), and the snackbar notice list.
+ * sticky footer (Settings tab only), and the snackbar notice list.
  *
  * Tab state is plain `useState` — the React tree is small enough that
- * a context or store would be overkill. Switching tabs unmounts the
- * previous one, so each tab's data hooks and resolvers are scoped to
- * the time it's on screen.
+ * a context or `@wordpress/data` store would be overkill. Switching
+ * tabs unmounts the previous one, so each tab's data hooks and
+ * resolvers are scoped to the time it's on screen (no stale
+ * subscriptions, no background polling for hidden tabs).
  */
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -17,16 +18,31 @@ import useSettings from '../../hooks/use-settings';
 import tabs from './tabs';
 
 const AdminApp = () => {
+	// We block the first render of any tab on the initial settings
+	// fetch. Most tabs don't strictly need the settings — addons /
+	// support don't read them — but rendering a spinner while
+	// core-data resolves prevents a flash of empty form controls
+	// when the user lands on the default Settings tab.
 	const { hasLoaded } = useSettings();
 
+	// Ordered list of tab keys. The first entry is the default tab.
 	const tabKeys = Object.keys( tabs );
 	const [ current, setCurrent ] = useState( tabKeys[ 0 ] );
 
+	// `TabNav` expects a simple `{ key: label }` map; build it from
+	// the tab registry so adding a new tab is a one-entry change in
+	// `./tabs/index.js`.
 	const navs = Object.fromEntries(
 		Object.entries( tabs ).map( ( [ key, tab ] ) => [ key, tab.label ] )
 	);
 
+	// Fall back to the first tab if `current` ever points at an
+	// unknown key (e.g. an addon-registered tab was removed between
+	// renders).
 	const ActiveTab = ( tabs[ current ] || tabs[ tabKeys[ 0 ] ] ).component;
+
+	// Some tabs opt into the wide page-body variant (Addons grid);
+	// the default is the narrow 780px settings-form column.
 	const isWide = !! tabs[ current ]?.wide;
 
 	return (
@@ -52,6 +68,13 @@ const AdminApp = () => {
 				) : (
 					<>
 						<ActiveTab />
+						{ /*
+						 * Sticky save bar is only relevant on the
+						 * Settings tab — the other tabs either
+						 * persist immediately (Addons license
+						 * actions) or have nothing to persist
+						 * (Support).
+						 */ }
 						{ current === 'settings' && <Footer /> }
 					</>
 				) }

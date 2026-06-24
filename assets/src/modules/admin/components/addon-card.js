@@ -7,7 +7,8 @@
  *   1. An optional banner image (`CardMedia`). When the addon is
  *      installed + active we also paint an "Active" pill in the
  *      top-right corner of the banner.
- *   2. A header carrying the addon title.
+ *   2. A header carrying the addon title (and the "Active" pill as
+ *      a fallback when there's no banner to overlay it on).
  *   3. A description body — this is the flex grower so the footer
  *      stays at a fixed height regardless of description length.
  *   4. A footer carrying the primary CTA (Manage license / Get it /
@@ -36,7 +37,16 @@ import {
 import BannerImage from './banner-image';
 
 const AddonCard = ( { addon, onManageLicense } ) => {
-	// Purchase CTA — shown when the addon isn't installed locally.
+	/*
+	 * Purchase CTA — shown only when the addon isn't installed
+	 * locally. Variant flips on `is_premium` so the paid items get
+	 * the high-emphasis primary button while the free ones use the
+	 * lower-key secondary button.
+	 *
+	 * Link priority: the catalogue's marketing URL (`link`) first,
+	 * then the project homepage (`homepage`) as a fallback for
+	 * rows that ship without a dedicated buy URL.
+	 */
 	const purchaseCta = (
 		<Button
 			__next40pxDefaultSize
@@ -76,7 +86,9 @@ const AddonCard = ( { addon, onManageLicense } ) => {
 				{ /*
 				 * When there is no banner, the "Active" pill has
 				 * nowhere to live, so we fall back to surfacing it
-				 * in the header instead.
+				 * in the header instead. (When a banner *is*
+				 * present, the overlaid pill above is the only
+				 * copy — we don't duplicate it here.)
 				 */ }
 				{ ! addon.banner && addon.is_active && (
 					<span className="loggedin-addon-status">
@@ -103,6 +115,16 @@ const AddonCard = ( { addon, onManageLicense } ) => {
 						) }
 					</FlexItem>
 					<FlexItem>
+						{ /*
+						 * Footer CTA — single slot, two states:
+						 *   - Installed: license management button.
+						 *     Label changes between "Activate" and
+						 *     "Manage" depending on the stored
+						 *     license state, but both open the
+						 *     same modal.
+						 *   - Not installed: the purchase CTA
+						 *     declared above.
+						 */ }
 						{ addon.is_active ? (
 							<Button
 								__next40pxDefaultSize
