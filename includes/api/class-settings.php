@@ -31,6 +31,11 @@ use WP_REST_Server;
 
 defined( 'WPINC' ) || die;
 
+/**
+ * REST endpoint for reading and updating plugin settings.
+ *
+ * @since 3.0.0
+ */
 final class Settings extends Endpoint {
 
 	use Singleton;

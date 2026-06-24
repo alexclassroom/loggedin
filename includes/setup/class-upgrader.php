@@ -25,6 +25,11 @@ use DuckDev\Loggedin\Plugin;
 
 defined( 'WPINC' ) || die;
 
+/**
+ * Schema upgrader — migrates legacy options to the unified store.
+ *
+ * @since 3.0.0
+ */
 final class Upgrader {
 
 	use Singleton;
@@ -57,7 +62,7 @@ final class Upgrader {
 	public function maybe_upgrade(): void {
 		$stored = (string) get_option( Plugin::VERSION_KEY, '' );
 
-		if ( $stored === Plugin::VERSION ) {
+		if ( Plugin::VERSION === $stored ) {
 			return;
 		}
 

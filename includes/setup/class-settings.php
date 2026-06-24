@@ -32,6 +32,11 @@ use DuckDev\Loggedin\Plugin;
 
 defined( 'WPINC' ) || die;
 
+/**
+ * Unified settings store backed by a single WP option.
+ *
+ * @since 3.0.0
+ */
 final class Settings {
 
 	use Singleton;

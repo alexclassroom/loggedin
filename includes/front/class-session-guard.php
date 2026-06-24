@@ -32,6 +32,11 @@ use WP_Session_Tokens;
 
 defined( 'WPINC' ) || die;
 
+/**
+ * Concurrent-login enforcement at the wp-login pipeline.
+ *
+ * @since 3.0.0
+ */
 final class Session_Guard {
 
 	use Singleton;
@@ -178,11 +183,12 @@ final class Session_Guard {
 		}
 
 		$oldest_token = '';
-		$oldest_time  = time();
+		$oldest_time  = PHP_INT_MAX;
 
 		foreach ( $sessions as $token => $session ) {
-			if ( isset( $session['login'] ) && $session['login'] < $oldest_time ) {
-				$oldest_time  = $session['login'];
+			$login = isset( $session['login'] ) ? (int) $session['login'] : PHP_INT_MAX;
+			if ( $login <= $oldest_time ) {
+				$oldest_time  = $login;
 				$oldest_token = $token;
 			}
 		}

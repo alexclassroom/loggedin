@@ -22,6 +22,11 @@ use WP_REST_Request;
 
 defined( 'WPINC' ) || die;
 
+/**
+ * Base REST endpoint with shared auth and namespace plumbing.
+ *
+ * @since 3.0.0
+ */
 abstract class Endpoint {
 
 	/**

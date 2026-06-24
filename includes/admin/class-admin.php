@@ -34,6 +34,11 @@ use WP_User;
 
 defined( 'WPINC' ) || die;
 
+/**
+ * Admin bootstrap — menu, assets, and React app shell.
+ *
+ * @since 3.0.0
+ */
 final class Admin {
 
 	use Singleton;

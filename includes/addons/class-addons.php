@@ -28,6 +28,11 @@ use WP_Error;
 
 defined( 'WPINC' ) || die;
 
+/**
+ * Addons registry and lifecycle manager.
+ *
+ * @since 3.0.0
+ */
 final class Addons {
 
 	use Singleton;

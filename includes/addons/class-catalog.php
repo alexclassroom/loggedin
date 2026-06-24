@@ -24,6 +24,11 @@ use DuckDev\Loggedin\Contracts\Singleton;
 
 defined( 'WPINC' ) || die;
 
+/**
+ * Static catalog of available addons.
+ *
+ * @since 3.0.0
+ */
 final class Catalog {
 
 	use Singleton;

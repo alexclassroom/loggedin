@@ -36,6 +36,11 @@ use WP_REST_Server;
 
 defined( 'WPINC' ) || die;
 
+/**
+ * REST endpoint for addon listing and activation.
+ *
+ * @since 3.0.0
+ */
 final class Addons extends Endpoint {
 
 	use Singleton;

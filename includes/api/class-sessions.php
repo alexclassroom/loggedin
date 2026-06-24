@@ -33,6 +33,11 @@ use WP_User;
 
 defined( 'WPINC' ) || die;
 
+/**
+ * REST endpoint for listing and force-destroying user sessions.
+ *
+ * @since 3.0.0
+ */
 final class Sessions extends Endpoint {
 
 	use Singleton;

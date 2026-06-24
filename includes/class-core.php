@@ -41,6 +41,11 @@ use DuckDev\Loggedin\Setup\Upgrader;
 
 defined( 'WPINC' ) || die;
 
+/**
+ * Plugin bootstrap — wires every module and fires the public boot action.
+ *
+ * @since 3.0.0
+ */
 final class Core {
 
 	use Singleton;
@@ -91,7 +96,7 @@ final class Core {
 	}
 
 	/**
-	 * wp-admin only modules. Gated on `is_admin()` so the menu /
+	 * Admin-only modules. Gated on `is_admin()` so the menu /
 	 * asset registrations don't fire on REST or front-end requests.
 	 */
 	private function admin(): void {
