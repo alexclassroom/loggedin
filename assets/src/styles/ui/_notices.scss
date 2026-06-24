@@ -1,15 +1,40 @@
 /*
- * Snackbar notice list — bottom-left of the viewport.
+ * Snackbar notice list — top-center over the content column.
  *
- * Lifted above the sticky footer (`z-index: 11`) so the "Settings
- * saved" snackbar that fires from the footer Save button isn't hidden
- * behind it.
+ * Mirrors the 404-to-301 plugin's notice placement: pinned just
+ * below the wp-admin toolbar, horizontally centered over the
+ * primary content (offset to account for the admin sidebar).
+ *
+ * The selector is intentionally specific (`.components-snackbar-list`
+ * AND our own className) so it overrides `@wordpress/components`'s
+ * default `bottom: 0; left: 0` positioning without resorting to
+ * `!important`.
  */
-.loggedin-wrap {
-	.loggedin-notices {
-		position: fixed;
-		bottom: 1rem;
-		left: 1rem;
-		z-index: 11;
+.components-snackbar-list.loggedin-notices {
+	position: fixed;
+	top: 52px;
+	left: calc(50% + 80px); // 50% + (admin sidebar / 2)
+	right: auto;
+	bottom: auto;
+	width: max-content;
+	max-width: calc(100vw - 200px);
+	transform: translateX(-50%);
+	z-index: 100000;
+}
+
+// When the admin sidebar is collapsed (folded) the offset shrinks
+// from 160px to 36px, halving to 18px.
+.folded .components-snackbar-list.loggedin-notices {
+	left: calc(50% + 18px);
+	max-width: calc(100vw - 76px);
+}
+
+// Mobile / narrow viewports — the sidebar drops to a slide-out,
+// so the offset goes away and the toolbar grows to 46px.
+@media (max-width: 782px) {
+	.components-snackbar-list.loggedin-notices {
+		top: 66px;
+		left: 50%;
+		max-width: calc(100vw - 40px);
 	}
 }
