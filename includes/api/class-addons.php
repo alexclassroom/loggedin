@@ -1,9 +1,15 @@
 <?php
 /**
- * Addons REST endpoint.
+ * Addons REST controller.
  *
- * Reads the addon catalogue, lists license state, and processes license
- * activate/deactivate requests for the React Addons screen.
+ * Two routes:
+ *
+ *   GET  /loggedin/v1/addons              List catalogue + license map.
+ *   POST /loggedin/v1/addons/license      Activate / deactivate a license.
+ *
+ * Both are backed by {@see \DuckDev\Loggedin\Addons\Addons}. The
+ * controller is a thin transport layer — request validation here,
+ * everything else delegated to the Addons module.
  *
  * @package DuckDev\Loggedin\Api
  */
@@ -25,10 +31,22 @@ final class Addons extends Endpoint {
 
 	use Singleton;
 
+	/**
+	 * Register hooks.
+	 *
+	 * @since 3.0.0
+	 */
 	protected function init(): void {
 		$this->hook();
 	}
 
+	/**
+	 * Register the two `/addons` routes.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return void
+	 */
 	public function register_routes(): void {
 		register_rest_route(
 			$this->namespace,
@@ -72,6 +90,18 @@ final class Addons extends Endpoint {
 		);
 	}
 
+	/**
+	 * GET handler — catalogue + license map.
+	 *
+	 * The `force` query parameter bypasses the SDK's day-long cache
+	 * and bumps to a live API hit. Used by the React refresh button.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param WP_REST_Request $request Incoming request.
+	 *
+	 * @return WP_REST_Response
+	 */
 	public function list_addons( WP_REST_Request $request ): WP_REST_Response {
 		$addons = Addons_Module::instance();
 		$force  = (bool) $request->get_param( 'force' );
@@ -86,7 +116,16 @@ final class Addons extends Endpoint {
 	}
 
 	/**
-	 * Activate or deactivate a license key.
+	 * POST handler — activate / deactivate an addon license.
+	 *
+	 * Returns the refreshed license map on success so the React UI
+	 * can re-render in one round trip; returns a 4xx `WP_Error` on
+	 * any failure (missing key on activate, unknown addon id, SDK
+	 * rejection).
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param WP_REST_Request $request Incoming request.
 	 *
 	 * @return WP_Error|WP_REST_Response
 	 */
@@ -96,14 +135,22 @@ final class Addons extends Endpoint {
 		$key    = sanitize_text_field( (string) $request->get_param( 'key' ) );
 
 		if ( 'activate' === $action && '' === $key ) {
-			return new WP_Error( 'missing_license_key', __( 'License key is required to activate.', 'loggedin' ), array( 'status' => 400 ) );
+			return new WP_Error(
+				'missing_license_key',
+				__( 'License key is required to activate.', 'loggedin' ),
+				array( 'status' => 400 )
+			);
 		}
 
 		$addons   = Addons_Module::instance();
 		$freemius = $addons->freemius_for( $id );
 
 		if ( null === $freemius ) {
-			return new WP_Error( 'addon_not_initialized', __( 'Addon not initialized.', 'loggedin' ), array( 'status' => 404 ) );
+			return new WP_Error(
+				'addon_not_initialized',
+				__( 'Addon not initialized.', 'loggedin' ),
+				array( 'status' => 404 )
+			);
 		}
 
 		$response = 'activate' === $action
@@ -111,7 +158,11 @@ final class Addons extends Endpoint {
 			: $freemius->license()->deactivate();
 
 		if ( is_wp_error( $response ) ) {
+			// Surface the SDK's error code / message verbatim and
+			// annotate with a 4xx status so the JS layer can branch
+			// on the response.
 			$response->add_data( array( 'status' => 400 ) );
+
 			return $response;
 		}
 

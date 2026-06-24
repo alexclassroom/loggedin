@@ -2,10 +2,23 @@
 /**
  * Admin module.
  *
- * Registers the admin menu, the (legacy) deep-link section, the
- * force-logout request handler, and the review-request notice. The
- * settings page itself is now a React mount point — its UI lives in
- * `assets/src/` and is enqueued by {@see Assets}.
+ * Responsible for the wp-admin surface area that is *not* the React
+ * app itself:
+ *
+ *   - Registering the menu item under Users → Loggedin and emitting
+ *     the React mount point div.
+ *   - The legacy section on Settings → General that deep-links to
+ *     the new admin page (kept for users who bookmarked the old
+ *     location).
+ *   - The "force logout this user from all devices" action handler
+ *     (link rendered by addon code or admin pages outside this
+ *     plugin).
+ *   - The review-request notice (one-time prompt asking the user to
+ *     rate the plugin on wp.org).
+ *
+ * Asset enqueueing for the React bundle lives in a sibling class —
+ * {@see Assets} — so this file doesn't have to know how the bundle
+ * is built or what dependencies it declares.
  *
  * @package DuckDev\Loggedin\Admin
  */
@@ -17,6 +30,7 @@ namespace DuckDev\Loggedin\Admin;
 use DuckDev\Loggedin\Contracts\Singleton;
 use DuckDev\Loggedin\Plugin;
 use WP_Session_Tokens;
+use WP_User;
 
 defined( 'WPINC' ) || die;
 
@@ -24,6 +38,11 @@ final class Admin {
 
 	use Singleton;
 
+	/**
+	 * Register hooks.
+	 *
+	 * @since 3.0.0
+	 */
 	protected function init(): void {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_init', array( $this, 'old_options_page' ) );
@@ -33,7 +52,18 @@ final class Admin {
 	}
 
 	/**
-	 * Force-logout a user from all devices.
+	 * Process a "force logout" request.
+	 *
+	 * Linked to from outside the React app (e.g. a user-row action on
+	 * the core Users list table contributed by an addon). Looks for
+	 * `?loggedin_logout=1&loggedin_user=<id>&_wpnonce=...`, verifies
+	 * the nonce, destroys every session for the target user, and
+	 * surfaces a `settings_errors`-based admin notice with the
+	 * result.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return void
 	 */
 	public function force_logout(): void {
 		if ( ! isset( $_REQUEST['loggedin_logout'], $_REQUEST['loggedin_user'] ) ) {
@@ -51,7 +81,7 @@ final class Admin {
 				'general',
 				'settings_updated',
 				sprintf(
-					// translators: %s User name of the logging out user.
+					// translators: %s user login of the user being logged out.
 					__( 'The user "%s" was forcefully logged out from all devices.', 'loggedin' ),
 					$user->user_login
 				),
@@ -62,7 +92,7 @@ final class Admin {
 				'general',
 				'settings_updated',
 				sprintf(
-					// translators: %d User ID.
+					// translators: %d the invalid user id supplied in the request.
 					__( 'Invalid user ID: %d', 'loggedin' ),
 					(int) $_REQUEST['loggedin_user']
 				)
@@ -70,6 +100,17 @@ final class Admin {
 		}
 	}
 
+	/**
+	 * Register the Users → Loggedin menu item.
+	 *
+	 * Kept under the Users menu (and not promoted to a top-level
+	 * item) so existing bookmarks of `users.php?page=loggedin`
+	 * keep working through this refactor.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return void
+	 */
 	public function register_menu(): void {
 		add_users_page(
 			// translators: %s lock icon.
@@ -90,15 +131,27 @@ final class Admin {
 	 * outer `.wrap` keeps WordPress admin notices positioned the way
 	 * core expects; the inner `.loggedin-wrap` is the root selector
 	 * every plugin stylesheet hangs its rules under.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return void
 	 */
 	public function render_page(): void {
 		echo '<div class="wrap"><div id="loggedin-admin" class="loggedin-wrap"></div></div>';
 	}
 
 	/**
-	 * Legacy pointer on the core Settings → General screen.
+	 * Add a deprecation section on Settings → General.
 	 *
-	 * @deprecated 2.0.0
+	 * Pre-2.0 versions registered the plugin's options on the core
+	 * General screen. Users who still navigate there see a one-line
+	 * pointer to the new location instead of a broken / empty
+	 * section.
+	 *
+	 * @since 2.0.0
+	 * @deprecated 2.0.0 Kept only as a navigation aid.
+	 *
+	 * @return void
 	 */
 	public function old_options_page(): void {
 		add_settings_section(
@@ -110,12 +163,19 @@ final class Admin {
 		);
 	}
 
+	/**
+	 * Render the deep-link pointer body.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return void
+	 */
 	public function loggedin_old_settings(): void {
 		?>
 		<p class="description">
 			<?php
 			printf(
-				// translators: %1$s, %2$s anchor tags.
+				// translators: %1$s opening anchor, %2$s closing anchor.
 				esc_attr__( 'Loggedin settings have been relocated. %1$sClick here%2$s to access the new settings page.', 'loggedin' ),
 				'<a href="' . esc_url( admin_url( 'users.php?page=' . Plugin::SLUG ) ) . '">',
 				'</a>'
@@ -125,6 +185,26 @@ final class Admin {
 		<?php
 	}
 
+	/**
+	 * Show the wp.org review-request notice on the plugin admin page.
+	 *
+	 * State machine:
+	 *
+	 *   - No `loggedin_rating_notice` option yet: this is the first
+	 *     visit on a new install. Schedule the notice to appear in a
+	 *     week and bail.
+	 *
+	 *   - The scheduled time is in the future: do nothing.
+	 *
+	 *   - The user already dismissed the notice (per-user meta): do
+	 *     nothing.
+	 *
+	 *   - Otherwise: render the notice.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return void|bool
+	 */
 	public function review_notice() {
 		$screen = get_current_screen();
 
@@ -139,7 +219,9 @@ final class Admin {
 		$notice_time = get_option( 'loggedin_rating_notice' );
 
 		if ( empty( $notice_time ) ) {
-			return add_option( 'loggedin_rating_notice', time() + 604800 );
+			// First view on a fresh install — schedule the prompt
+			// for a week out.
+			return add_option( 'loggedin_rating_notice', time() + WEEK_IN_SECONDS );
 		}
 
 		$current_user = wp_get_current_user();
@@ -150,7 +232,20 @@ final class Admin {
 		}
 	}
 
-	private function render_review_notice( \WP_User $current_user ): void {
+	/**
+	 * Render the notice markup.
+	 *
+	 * Three actions:
+	 *   - "Rate now" → opens the wp.org review form in a new tab.
+	 *   - "Maybe later" → re-schedules the notice for two weeks out.
+	 *   - "No thanks" → records a per-user dismissal so the notice
+	 *     never reappears for this account.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param WP_User $current_user The logged-in admin.
+	 */
+	private function render_review_notice( WP_User $current_user ): void {
 		$dismiss = wp_nonce_url( add_query_arg( 'loggedin_rating', 'dismiss' ), 'loggedin_rating' );
 		$later   = wp_nonce_url( add_query_arg( 'loggedin_rating', 'later' ), 'loggedin_rating' );
 		$rate    = 'https://wordpress.org/support/plugin/loggedin/reviews/?rate=5#new-post';
@@ -159,7 +254,7 @@ final class Admin {
 			<p>
 				<?php
 				printf(
-					// translators: %s display name.
+					// translators: %s the admin's display name.
 					esc_html__( 'Hi %s, are you enjoying Loggedin? Could you leave a quick rating on WordPress.org?', 'loggedin' ),
 					esc_html( $current_user->display_name )
 				);
@@ -176,6 +271,16 @@ final class Admin {
 		<?php
 	}
 
+	/**
+	 * Process the review-notice action links.
+	 *
+	 * Hooked early enough that the redirect / option-write is in
+	 * place before the notice rendering runs on the same request.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return void
+	 */
 	public function review_action(): void {
 		if ( ! isset( $_REQUEST['loggedin_rating'] ) ) {
 			return;
@@ -185,15 +290,21 @@ final class Admin {
 			return;
 		}
 
-		if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'loggedin_rating' ) ) { // phpcs:ignore
+		if (
+			! isset( $_REQUEST['_wpnonce'] ) ||
+			! wp_verify_nonce( $_REQUEST['_wpnonce'], 'loggedin_rating' ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		) {
 			return;
 		}
 
 		switch ( $_REQUEST['loggedin_rating'] ) {
 			case 'later':
-				update_option( 'loggedin_rating_notice', time() + 1209600 );
+				// Push the prompt out two more weeks.
+				update_option( 'loggedin_rating_notice', time() + ( 2 * WEEK_IN_SECONDS ) );
 				break;
+
 			case 'dismiss':
+				// Hide forever for this user.
 				update_user_meta( get_current_user_id(), 'loggedin_rating_notice_dismissed', 1 );
 				break;
 		}

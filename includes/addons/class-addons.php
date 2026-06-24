@@ -1,6 +1,17 @@
 <?php
 /**
- * Addons module — Freemius wiring + license management.
+ * Addons module — Freemius wiring.
+ *
+ * This module is the bridge between the plugin and the
+ * `duckdev/freemius-plugin-licensing` SDK. It is responsible for:
+ *
+ *   - Building Freemius instances for the parent plugin and each
+ *     registered addon (lazily — see {@see maybe_init_freemius()}).
+ *   - Surfacing the addon catalogue and per-addon license status to
+ *     the REST controller that backs the React Addons tab.
+ *
+ * The actual REST routes live in {@see \DuckDev\Loggedin\Api\Addons};
+ * this class just owns the SDK state.
  *
  * @package DuckDev\Loggedin\Addons
  */
@@ -20,18 +31,37 @@ final class Addons {
 	use Singleton;
 
 	/**
-	 * Freemius instances keyed by addon id.
+	 * Cache of Freemius SDK instances keyed by plugin / addon id.
 	 *
 	 * @var Freemius[]
 	 */
 	protected array $freemius = array();
 
+	/**
+	 * Register hooks.
+	 *
+	 * The eager init runs on `admin_init` so the SDK can attach its
+	 * own admin-side wiring (notices, settings links). REST requests
+	 * (which don't fire `admin_init`) go through the lazy path in
+	 * {@see maybe_init_freemius()} instead.
+	 *
+	 * @since 3.0.0
+	 */
 	protected function init(): void {
 		add_action( 'admin_init', array( $this, 'init_freemius' ) );
 	}
 
 	/**
-	 * Get the Freemius instance for an addon, or null when not initialized.
+	 * Return the Freemius instance for a given addon id.
+	 *
+	 * Used by `Api\Addons::manage_license()` to look up the SDK
+	 * handle for the addon the request is targeting.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param int $id Addon Freemius id.
+	 *
+	 * @return Freemius|null
 	 */
 	public function freemius_for( int $id ): ?Freemius {
 		$this->maybe_init_freemius();
@@ -39,6 +69,19 @@ final class Addons {
 		return $this->freemius[ $id ] ?? null;
 	}
 
+	/**
+	 * Return the addon catalogue from the Freemius API.
+	 *
+	 * The SDK caches the result for one day by default. Passing
+	 * `$force = true` bypasses both the SDK's cache and any HTTP
+	 * cache layered above it.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param bool $force Force-refresh the cached catalogue.
+	 *
+	 * @return array
+	 */
 	public function get_addons( bool $force = false ): array {
 		$this->maybe_init_freemius();
 
@@ -49,6 +92,27 @@ final class Addons {
 		return $this->freemius[ Plugin::FREEMIUS_ID ]->addon()->get_addons( $force );
 	}
 
+	/**
+	 * Map of license rows keyed by addon id.
+	 *
+	 * Shape:
+	 *   [
+	 *     <addon_id> => [
+	 *       'key'    => string,   // raw license key (may be empty)
+	 *       'status' => string,   // Activation::STATUS_* constant
+	 *       'plugin' => array,    // Freemius plugin metadata
+	 *     ],
+	 *     ...
+	 *   ]
+	 *
+	 * Returned alongside the catalogue from the addons REST endpoint
+	 * so the React UI can render each card's activate/deactivate UI
+	 * without a second round trip.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return array<int, array{key: string, status: string, plugin: array}>
+	 */
 	public function get_license_items(): array {
 		$this->maybe_init_freemius();
 
@@ -56,14 +120,17 @@ final class Addons {
 		$addons = $this->get_registered_addons();
 
 		foreach ( $addons as $id => $args ) {
-			if ( isset( $this->freemius[ $id ] ) ) {
-				$activation   = $this->freemius[ $id ]->license()->get_activation();
-				$items[ $id ] = array(
-					'key'    => $activation->license_key(),
-					'status' => $activation->status(),
-					'plugin' => $this->freemius[ $id ]->plugin()->get_data(),
-				);
+			if ( ! isset( $this->freemius[ $id ] ) ) {
+				continue;
 			}
+
+			$activation = $this->freemius[ $id ]->license()->get_activation();
+
+			$items[ $id ] = array(
+				'key'    => $activation->license_key(),
+				'status' => $activation->status(),
+				'plugin' => $this->freemius[ $id ]->plugin()->get_data(),
+			);
 		}
 
 		return $items;
@@ -72,8 +139,14 @@ final class Addons {
 	/**
 	 * Lazily build the Freemius instances on first need.
 	 *
-	 * `admin_init` still triggers the eager path on admin requests; REST
-	 * requests (which don't fire admin_init) come through this fallback.
+	 * The `admin_init` path covers wp-admin requests; this method
+	 * covers REST + CLI + anywhere else the catalogue is queried.
+	 * Both paths share the same cache, so a request that hits both
+	 * (rare but possible) only builds the instances once.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return void
 	 */
 	protected function maybe_init_freemius(): void {
 		if ( isset( $this->freemius[ Plugin::FREEMIUS_ID ] ) ) {
@@ -83,6 +156,13 @@ final class Addons {
 		$this->init_freemius();
 	}
 
+	/**
+	 * Build Freemius instances for the parent plugin + every addon.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return void
+	 */
 	public function init_freemius(): void {
 		if ( isset( $this->freemius[ Plugin::FREEMIUS_ID ] ) ) {
 			return;
@@ -104,15 +184,23 @@ final class Addons {
 		}
 	}
 
+	/**
+	 * List of addons registered by other plugins.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return array<int, array> Addons keyed by Freemius id.
+	 */
 	protected function get_registered_addons(): array {
 		/**
 		 * Filter the list of registered addons.
 		 *
-		 * Addon plugins should hook into this to register themselves.
+		 * Addon plugins should hook here and append themselves so
+		 * the parent plugin can build a Freemius instance for them.
 		 *
 		 * @since 2.0.0
 		 *
-		 * @param array $addons Addon list keyed by Freemius id.
+		 * @param array $addons Addons keyed by Freemius id.
 		 */
 		return apply_filters( 'loggedin_register_addon', array() );
 	}
