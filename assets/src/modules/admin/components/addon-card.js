@@ -2,13 +2,21 @@
  * Single addon card.
  *
  * Card chrome comes from the `@wordpress/components` `Card`
- * primitives. The body is the flex-grower so the footer stays a
- * fixed height regardless of description length.
+ * primitives. The card has, in order:
  *
- * License management lives in a sibling modal — clicking "Manage
- * license" fires the parent's `onManageLicense(addon)` callback so
- * the modal can be hoisted to the tab root (keeps focus management
- * + ARIA announcements clean).
+ *   1. An optional banner image (`CardMedia`). When the addon is
+ *      installed + active we also paint an "Active" pill in the
+ *      top-right corner of the banner.
+ *   2. A header carrying the addon title.
+ *   3. A description body — this is the flex grower so the footer
+ *      stays at a fixed height regardless of description length.
+ *   4. A footer carrying the primary CTA (Manage license / Get it /
+ *      Buy now) and a "Learn more" link.
+ *
+ * License management lives in a sibling modal — clicking
+ * "Manage license" fires `onManageLicense(addon)` so the modal can
+ * be hoisted to the tab root (keeps focus management + ARIA
+ * announcements clean).
  *
  * @param {Object}   props
  * @param {Object}   props.addon            Decorated addon row from REST.
@@ -21,9 +29,11 @@ import {
 	CardBody,
 	CardFooter,
 	CardHeader,
+	CardMedia,
 	Flex,
 	FlexItem,
 } from '@wordpress/components';
+import BannerImage from './banner-image';
 
 const AddonCard = ( { addon, onManageLicense } ) => {
 	// Purchase CTA — shown when the addon isn't installed locally.
@@ -43,9 +53,32 @@ const AddonCard = ( { addon, onManageLicense } ) => {
 
 	return (
 		<Card className="loggedin-addon-card" isRounded size="small">
+			{ addon.banner && (
+				<CardMedia className="loggedin-addon-banner">
+					<BannerImage
+						src={ addon.banner }
+						srcLarge={ addon.banner_large }
+						alt={ addon.title }
+					/>
+					{ addon.is_active && (
+						<span
+							className="loggedin-addon-status"
+							aria-label={ __( 'Active', 'loggedin' ) }
+						>
+							{ __( 'Active', 'loggedin' ) }
+						</span>
+					) }
+				</CardMedia>
+			) }
+
 			<CardHeader>
 				<strong>{ addon.title }</strong>
-				{ addon.is_active && (
+				{ /*
+				 * When there is no banner, the "Active" pill has
+				 * nowhere to live, so we fall back to surfacing it
+				 * in the header instead.
+				 */ }
+				{ ! addon.banner && addon.is_active && (
 					<span className="loggedin-addon-status">
 						{ __( 'Active', 'loggedin' ) }
 					</span>

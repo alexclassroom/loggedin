@@ -5,9 +5,10 @@
  * column width — cards expand to fill the row and wrap to a new
  * line once the viewport can't fit another column.
  *
- * Card body uses `flex: 1` so all cards in a row are the same
+ * The card body uses `flex: 1` so all cards in a row are the same
  * height regardless of how much text each addon's description
- * carries.
+ * carries. The banner / header / footer slots stay at their
+ * natural content height so the action row aligns across cards.
  */
 .loggedin-wrap {
 	.loggedin-addons-toolbar {
@@ -23,20 +24,78 @@
 	.loggedin-addon-card {
 		display: flex;
 		flex-direction: column;
+		height: 100%;
+
+		// `Card` wraps its children in an inner content `<View />`
+		// (height: 100%, but not `display: flex`). Without this
+		// override the flex rules below don't actually flex.
+		> div:first-child {
+			display: flex;
+			flex: 1 1 auto;
+			flex-direction: column;
+			min-height: 0;
+		}
 
 		.loggedin-addon-description {
-			flex: 1;
+			flex: 1 1 auto;
 		}
 
-		.loggedin-addon-status {
-			padding: 2px 8px;
-			font-size: 11px;
-			font-weight: 600;
-			text-transform: uppercase;
-			color: #fff;
-			background: #008a20;
-			border-radius: 3px;
+		.components-card__header,
+		.components-card__media,
+		.components-card__footer {
+			flex: 0 0 auto;
 		}
+	}
+
+	.loggedin-addon-banner {
+		position: relative;
+		aspect-ratio: 300 / 100;
+		overflow: hidden;
+		background: #f0f0f1;
+	}
+
+	.loggedin-addon-banner__img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	// Centered WP <Spinner /> shown while the banner image loads.
+	.loggedin-addon-banner__spinner {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	// Active-state pill. Lives inside the banner when one is
+	// present (top-right corner overlay); otherwise the card header
+	// surfaces the same pill inline.
+	.loggedin-addon-status {
+		display: inline-flex;
+		align-items: center;
+		padding: 3px 10px;
+		font-size: 11px;
+		font-weight: 600;
+		line-height: 1.4;
+		color: #fff;
+		background: #008a20;
+		border-radius: 12px;
+		text-transform: uppercase;
+		letter-spacing: .02em;
+	}
+
+	.loggedin-addon-banner .loggedin-addon-status {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		// Sits above the banner image, which establishes its own
+		// stacking context — without this the pill disappears once
+		// the image finishes loading.
+		z-index: 2;
 	}
 
 	.loggedin-link-row {
