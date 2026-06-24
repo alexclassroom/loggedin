@@ -3,6 +3,7 @@ node_modules
 /build
 vendor
 .phpcs.cache
+.phpunit.result.cache
 /coverage
 
 
