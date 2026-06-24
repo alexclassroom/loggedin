@@ -17,13 +17,17 @@
   ],
   "license": "GPL-2.0-or-later",
   "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "format": "wp-scripts format",
+    "lint:js": "wp-scripts lint-js",
     "pack": "wp-scripts plugin-zip"
   },
   "devDependencies": {
     "@wordpress/scripts": "^30.21.0"
   },
   "files": [
-    "app",
+    "build",
     "includes",
     "languages",
     "vendor",
