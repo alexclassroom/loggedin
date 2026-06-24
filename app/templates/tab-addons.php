@@ -15,7 +15,7 @@
  * @package    View
  */
 
-use DuckDev\Freemius\Services\Service;
+use DuckDev\Freemius\Data\Activation;
 use DuckDev\Loggedin\View;
 
 ?>
@@ -31,7 +31,7 @@ use DuckDev\Loggedin\View;
 						'id'                => $addon['id'],
 						'title'             => $addon['title'] ?? '',
 						'is_active'         => isset( $registered_addons[ $addon['id'] ] ),
-						'is_license_active' => isset( $license_items[ $addon['id'] ]['status'] ) && $license_items[ $addon['id'] ]['status'] === Service::ACTIVATED,
+						'is_license_active' => isset( $license_items[ $addon['id'] ]['status'] ) && $license_items[ $addon['id'] ]['status'] === Activation::STATUS_ACTIVATED,
 						'license_key'       => $license_items[ $addon['id'] ]['key'] ?? '',
 						'link'              => $addon['link'] ?? '',
 						'is_premium'        => $addon['is_premium'] ?? false,

@@ -91,11 +91,11 @@ class Addons {
 
 		foreach ( $addons as $id => $args ) {
 			if ( isset( $this->freemius[ $id ] ) ) {
-				$activation   = $this->freemius[ $id ]->license()->get_activation_data();
+				$activation   = $this->freemius[ $id ]->license()->get_activation();
 				$items[ $id ] = array(
-					'key'    => $activation['activation_params']['license_key'] ?? '',
-					'status' => $activation['status'] ?? '',
-					'plugin' => $this->freemius[ $id ]->license()->get_plugin()->get_data(),
+					'key'    => $activation->license_key(),
+					'status' => $activation->status(),
+					'plugin' => $this->freemius[ $id ]->plugin()->get_data(),
 				);
 			}
 		}
