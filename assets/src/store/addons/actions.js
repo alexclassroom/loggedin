@@ -1,10 +1,9 @@
 /**
  * Action creators for the addons store.
  *
- * Public actions returned to component code are `setAddons`,
- * `setLicenses`, and the async `refreshAddons` / `manageLicense`
- * generators (which yield through the `FETCH` control to perform
- * `apiFetch` calls).
+ * Plain actions (`setAddons`, `setLicenses`) and the async
+ * generators (`refreshAddons`, `manageLicense`) that fetch through
+ * the `FETCH` control and dispatch results.
  */
 import { dispatch } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
@@ -37,21 +36,31 @@ export function setLicenses( licenses ) {
 }
 
 /**
- * Control-yielding generator: fetch the catalogue from the REST API,
- * passing `force=1` to bust the server-side Freemius cache.
+ * Bust the server-side Freemius cache and re-fetch the catalogue.
+ *
+ * Wrapped in try/catch so a failed refresh shows an error snackbar
+ * instead of throwing into the console.
  */
 export function* refreshAddons() {
-	const data = yield {
-		type: 'FETCH',
-		request: { path: 'addons?force=1' },
-	};
+	try {
+		const data = yield {
+			type: 'FETCH',
+			request: { path: 'addons?force=1' },
+		};
 
-	yield setAddons( data.addons ?? [], data.licenses ?? {} );
+		yield setAddons( data?.addons ?? [], data?.licenses ?? {} );
 
-	dispatch( noticesStore ).createSuccessNotice(
-		__( 'Addons refreshed.', 'loggedin' ),
-		{ type: 'snackbar' }
-	);
+		dispatch( noticesStore ).createSuccessNotice(
+			__( 'Addons refreshed.', 'loggedin' ),
+			{ type: 'snackbar' }
+		);
+	} catch ( error ) {
+		dispatch( noticesStore ).createErrorNotice(
+			error?.message ||
+				__( 'Failed to refresh addons.', 'loggedin' ),
+			{ type: 'snackbar' }
+		);
+	}
 }
 
 /**
@@ -79,7 +88,7 @@ export function* manageLicense( id, action, key ) {
 			yield setLicenses( res.licenses );
 		}
 
-		yield dispatch( noticesStore ).createSuccessNotice(
+		dispatch( noticesStore ).createSuccessNotice(
 			action === 'activate'
 				? __( 'License activated.', 'loggedin' )
 				: __( 'License deactivated.', 'loggedin' ),
@@ -88,8 +97,9 @@ export function* manageLicense( id, action, key ) {
 
 		return true;
 	} catch ( error ) {
-		yield dispatch( noticesStore ).createErrorNotice(
-			error?.message || __( 'License request failed.', 'loggedin' ),
+		dispatch( noticesStore ).createErrorNotice(
+			error?.message ||
+				__( 'License request failed.', 'loggedin' ),
 			{ type: 'snackbar' }
 		);
 

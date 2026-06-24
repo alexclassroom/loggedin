@@ -4,14 +4,18 @@
  * State shape:
  *   {
  *     addons:   Array<{ id, title, link, ... }>   // catalogue
- *     licenses: Record<addonId, { key, status }>  // license state
- *     loaded:   boolean                           // first fetch complete
+ *     licenses: Record<addonId, { key, status }>  // license rows
  *   }
+ *
+ * We deliberately don't track a `loaded` flag here — `@wordpress/data`
+ * already exposes per-selector resolution state via
+ * `hasFinishedResolution()`, so duplicating it in the reducer is
+ * error-prone (it's easy to forget to flip the flag on the failure
+ * path and end up with a spinner that never resolves).
  */
 const DEFAULT_STATE = {
 	addons: [],
 	licenses: {},
-	loaded: false,
 };
 
 const reducer = ( state = DEFAULT_STATE, action ) => {
@@ -21,7 +25,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				...state,
 				addons: action.addons,
 				licenses: action.licenses,
-				loaded: true,
 			};
 
 		case 'SET_LICENSES':

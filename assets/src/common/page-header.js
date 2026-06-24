@@ -20,7 +20,6 @@ const PageHeader = ( { title, children } ) => {
 	return (
 		<header className="loggedin-page-header">
 			<div className="loggedin-page-title">
-				<span aria-hidden="true">🔒</span>
 				<h1>{ title }</h1>
 				{ version && (
 					<span className="loggedin-version">{ version }</span>
