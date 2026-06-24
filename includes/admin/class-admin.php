@@ -2,9 +2,10 @@
 /**
  * Admin module.
  *
- * Wires up the admin menu, the (legacy) settings screen, the force-logout
- * action, and the review-request notice. Settings reads/writes go through
- * {@see \DuckDev\Loggedin\Setup\Settings}.
+ * Registers the admin menu, the (legacy) deep-link section, the
+ * force-logout request handler, and the review-request notice. The
+ * settings page itself is now a React mount point — its UI lives in
+ * `assets/src/` and is enqueued by {@see Assets}.
  *
  * @package DuckDev\Loggedin\Admin
  */
@@ -15,8 +16,6 @@ namespace DuckDev\Loggedin\Admin;
 
 use DuckDev\Loggedin\Contracts\Singleton;
 use DuckDev\Loggedin\Plugin;
-use DuckDev\Loggedin\Setup\Settings;
-use DuckDev\Loggedin\View;
 use WP_Session_Tokens;
 
 defined( 'WPINC' ) || die;
@@ -79,49 +78,19 @@ final class Admin {
 			sprintf( __( '%s Loggedin', 'loggedin' ), '<span class="dashicons dashicons-lock"></span>' ),
 			'manage_options',
 			Plugin::SLUG,
-			array( $this, 'admin_page' )
+			array( $this, 'render_page' )
 		);
-	}
-
-	public function admin_page(): void {
-		$settings = Settings::instance()->all();
-
-		$vars = array(
-			'login_maximum' => (int) $settings['maximum'],
-			'login_logic'   => (string) $settings['logic'],
-			'current_tab'   => $this->get_current_tab(),
-			'logics'        => $this->loggedin_logics(),
-			'tab_items'     => array(
-				'settings' => array(
-					'label' => __( 'Settings', 'loggedin' ),
-					'icon'  => 'dashicons-admin-settings',
-				),
-				'addons'   => array(
-					'label' => __( 'Addons', 'loggedin' ),
-					'icon'  => 'dashicons-screenoptions',
-				),
-				'support'  => array(
-					'label' => __( 'Support', 'loggedin' ),
-					'icon'  => 'dashicons-editor-help',
-				),
-			),
-		);
-
-		/**
-		 * Filter admin template vars.
-		 *
-		 * @since 2.0.0
-		 *
-		 * @param array $vars Variables.
-		 */
-		$vars = apply_filters( 'loggedin_admin_page_vars', $vars );
-
-		View::render( 'admin', $vars );
 	}
 
 	/**
-	 * Legacy section on the core Settings → General page pointing to the
-	 * new settings location.
+	 * Render the React mount-point.
+	 */
+	public function render_page(): void {
+		echo '<div class="wrap"><div id="loggedin-admin"></div></div>';
+	}
+
+	/**
+	 * Legacy pointer on the core Settings → General screen.
 	 *
 	 * @deprecated 2.0.0
 	 */
@@ -171,11 +140,34 @@ final class Admin {
 		$dismissed    = get_user_meta( $current_user->ID, 'loggedin_rating_notice_dismissed', true );
 
 		if ( (int) $notice_time <= time() && ! $dismissed ) {
-			View::render(
-				'review/notice',
-				array( 'current_user' => $current_user ),
-			);
+			$this->render_review_notice( $current_user );
 		}
+	}
+
+	private function render_review_notice( \WP_User $current_user ): void {
+		$dismiss = wp_nonce_url( add_query_arg( 'loggedin_rating', 'dismiss' ), 'loggedin_rating' );
+		$later   = wp_nonce_url( add_query_arg( 'loggedin_rating', 'later' ), 'loggedin_rating' );
+		$rate    = 'https://wordpress.org/support/plugin/loggedin/reviews/?rate=5#new-post';
+		?>
+		<div class="notice notice-info is-dismissible">
+			<p>
+				<?php
+				printf(
+					// translators: %s display name.
+					esc_html__( 'Hi %s, are you enjoying Loggedin? Could you leave a quick rating on WordPress.org?', 'loggedin' ),
+					esc_html( $current_user->display_name )
+				);
+				?>
+			</p>
+			<p>
+				<a class="button button-primary" href="<?php echo esc_url( $rate ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Rate now', 'loggedin' ); ?></a>
+				&nbsp;
+				<a class="button" href="<?php echo esc_url( $later ); ?>"><?php esc_html_e( 'Maybe later', 'loggedin' ); ?></a>
+				&nbsp;
+				<a href="<?php echo esc_url( $dismiss ); ?>"><?php esc_html_e( 'No thanks', 'loggedin' ); ?></a>
+			</p>
+		</div>
+		<?php
 	}
 
 	public function review_action(): void {
@@ -199,39 +191,5 @@ final class Admin {
 				update_user_meta( get_current_user_id(), 'loggedin_rating_notice_dismissed', 1 );
 				break;
 		}
-	}
-
-	protected function get_current_tab(): string {
-		$tabs = array( 'settings', 'addons', 'support' );
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'settings';
-
-		return in_array( $tab, $tabs, true ) ? $tab : 'settings';
-	}
-
-	protected function loggedin_logics(): array {
-		$logics = array(
-			'logout_oldest' => array(
-				'label' => __( 'Logout Oldest', 'loggedin' ),
-				'desc'  => esc_html__( 'When the concurrent login limit is reached, a new login will automatically end the single oldest active session. This feature works only with user meta session storage.', 'loggedin' ),
-			),
-			'allow'         => array(
-				'label' => __( 'Logout All', 'loggedin' ),
-				'desc'  => esc_html__( 'When the concurrent login limit is reached, a new login will automatically terminate all previously active sessions.', 'loggedin' ),
-			),
-			'block'         => array(
-				'label' => __( 'Block New', 'loggedin' ),
-				'desc'  => esc_html__( 'If the concurrent login limit is reached, do not allow new logins. Users must then wait for existing login sessions to expire.', 'loggedin' ),
-			),
-		);
-
-		/**
-		 * Filter the list of available login logics.
-		 *
-		 * @since 2.0.0
-		 *
-		 * @param array $logics Logics.
-		 */
-		return apply_filters( 'loggedin_logics', $logics );
 	}
 }

@@ -28,9 +28,6 @@ final class Addons {
 
 	protected function init(): void {
 		add_action( 'admin_init', array( $this, 'init_freemius' ) );
-		add_action( 'admin_init', array( $this, 'process_license' ) );
-		add_action( 'admin_init', array( $this, 'process_addons_refresh' ) );
-		add_filter( 'loggedin_admin_page_vars', array( $this, 'admin_page_vars' ) );
 	}
 
 	/**
@@ -70,85 +67,6 @@ final class Addons {
 		}
 
 		return $items;
-	}
-
-	public function admin_page_vars( array $vars ): array {
-		$addons = $this->get_addons();
-
-		if ( empty( $addons ) ) {
-			unset( $vars['tab_items']['addons'] );
-			$vars['current_tab'] = 'settings';
-		}
-
-		$vars['addons']            = $addons;
-		$vars['license_items']     = $this->get_license_items();
-		$vars['registered_addons'] = $this->get_registered_addons();
-
-		return $vars;
-	}
-
-	public function process_license(): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$data = wp_unslash( $_POST['loggedin_licenses'] ?? '' );
-
-		if ( ! isset( $data['nonce'], $data['action'], $data['key'], $data['id'] ) ) {
-			return;
-		}
-
-		if ( ! wp_verify_nonce( $data['nonce'], 'loggedin_licenses[nonce]' ) ) {
-			add_settings_error( 'loggedin_licenses', 'nonce_check_failed', __( 'Nonce check failed.', 'loggedin' ) );
-
-			return;
-		}
-
-		if ( ! current_user_can( 'manage_options' ) ) {
-			add_settings_error( 'loggedin_licenses', 'permission_check_failed', __( 'You do not have the permission to do this.', 'loggedin' ) );
-
-			return;
-		}
-
-		$id     = (int) $data['id'];
-		$key    = sanitize_text_field( $data['key'] );
-		$action = 'activate' === $data['action'] ? 'activate' : 'deactivate';
-
-		if ( ! isset( $this->freemius[ $id ] ) ) {
-			add_settings_error( 'loggedin_licenses', 'addon_not_initialized', __( 'Addon not initialized.', 'loggedin' ) );
-
-			return;
-		}
-
-		$response = 'activate' === $action
-			? $this->freemius[ $id ]->license()->activate( $key )
-			: $this->freemius[ $id ]->license()->deactivate();
-
-		if ( is_wp_error( $response ) ) {
-			add_settings_error( 'loggedin_licenses', $response->get_error_code(), $response->get_error_message() );
-		} else {
-			add_settings_error(
-				'loggedin_licenses',
-				$action,
-				'activate' === $action
-					? __( 'Your license key has been activated successfully.', 'loggedin' )
-					: __( 'Your license key has been deactivated.', 'loggedin' ),
-				'updated'
-			);
-		}
-	}
-
-	public function process_addons_refresh(): void {
-		if ( ! isset( $_REQUEST['_wpnonce'], $_REQUEST['loggedin-addons-refresh'] ) ) {
-			return;
-		}
-
-		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'loggedin-addons-refresh' ) ) {
-			return;
-		}
-
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-
-		$this->get_addons( true );
 	}
 
 	/**

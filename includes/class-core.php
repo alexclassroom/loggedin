@@ -14,6 +14,7 @@ namespace DuckDev\Loggedin;
 
 use DuckDev\Loggedin\Addons\Addons;
 use DuckDev\Loggedin\Admin\Admin;
+use DuckDev\Loggedin\Admin\Assets;
 use DuckDev\Loggedin\Api\Addons as Addons_Api;
 use DuckDev\Loggedin\Api\Settings as Settings_Api;
 use DuckDev\Loggedin\Contracts\Singleton;
@@ -56,6 +57,7 @@ final class Core {
 	private function admin(): void {
 		if ( is_admin() ) {
 			Admin::instance();
+			Assets::instance();
 		}
 	}
 

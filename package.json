@@ -17,10 +17,10 @@
   ],
   "license": "GPL-2.0-or-later",
   "scripts": {
-    "build": "wp-scripts build",
-    "start": "wp-scripts start",
-    "format": "wp-scripts format",
-    "lint:js": "wp-scripts lint-js",
+    "build": "wp-scripts build assets/src/admin.js --output-path=build",
+    "start": "wp-scripts start assets/src/admin.js --output-path=build",
+    "format": "wp-scripts format assets/src",
+    "lint:js": "wp-scripts lint-js assets/src",
     "pack": "wp-scripts plugin-zip"
   },
   "devDependencies": {
