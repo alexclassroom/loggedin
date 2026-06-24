@@ -21,6 +21,7 @@ import {
 	__experimentalNumberControl as NumberControl,
 } from '@wordpress/components';
 import useSettings from '../../../hooks/use-settings';
+import ForceLogoutPanel from '../components/force-logout-panel';
 
 /**
  * Logic catalogue keyed by mode id — `{ label, desc }` per entry.
@@ -64,44 +65,54 @@ const Settings = () => {
 	const logicHelp = logics[ logic ] ? logics[ logic ].desc : '';
 
 	return (
-		<PanelBody
-			title={ __( 'General Settings', 'loggedin' ) }
-			initialOpen
-		>
-			<PanelRow>
-				<NumberControl
-					__next40pxDefaultSize
-					label={ __( 'Active Logins Limit', 'loggedin' ) }
-					help={ __(
-						'Maximum number of simultaneous logins allowed per user account.',
-						'loggedin'
-					) }
-					min={ 1 }
-					value={ maximum }
-					onChange={ ( value ) =>
-						// `NumberControl` emits strings (and the
-						// browser permits typing nonsense like an
-						// empty string). Clamp to 1 so a stray
-						// empty / negative value never makes it
-						// into the edit buffer.
-						setSetting(
-							'maximum',
-							Math.max( 1, parseInt( value, 10 ) || 1 )
-						)
-					}
-				/>
-			</PanelRow>
+		<>
+			<PanelBody
+				title={ __( 'General Settings', 'loggedin' ) }
+				initialOpen
+			>
+				<PanelRow>
+					<NumberControl
+						__next40pxDefaultSize
+						label={ __( 'Active Logins Limit', 'loggedin' ) }
+						help={ __(
+							'Maximum number of simultaneous logins allowed per user account.',
+							'loggedin'
+						) }
+						min={ 1 }
+						value={ maximum }
+						onChange={ ( value ) =>
+							// `NumberControl` emits strings (and the
+							// browser permits typing nonsense like an
+							// empty string). Clamp to 1 so a stray
+							// empty / negative value never makes it
+							// into the edit buffer.
+							setSetting(
+								'maximum',
+								Math.max( 1, parseInt( value, 10 ) || 1 )
+							)
+						}
+					/>
+				</PanelRow>
 
-			<PanelRow>
-				<RadioControl
-					label={ __( 'Login Logic', 'loggedin' ) }
-					help={ logicHelp }
-					selected={ logic }
-					options={ logicOptions }
-					onChange={ ( value ) => setSetting( 'logic', value ) }
-				/>
-			</PanelRow>
-		</PanelBody>
+				<PanelRow>
+					<RadioControl
+						label={ __( 'Login Logic', 'loggedin' ) }
+						help={ logicHelp }
+						selected={ logic }
+						options={ logicOptions }
+						onChange={ ( value ) => setSetting( 'logic', value ) }
+					/>
+				</PanelRow>
+			</PanelBody>
+
+			{ /*
+			 * Sibling panel below the form. Its own REST endpoint
+			 * fires immediately on click (no Save-button gating),
+			 * so it stays out of the core-data edit buffer that
+			 * the rest of this tab uses.
+			 */ }
+			<ForceLogoutPanel />
+		</>
 	);
 };
 

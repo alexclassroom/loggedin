@@ -32,6 +32,7 @@ use DuckDev\Loggedin\Addons\Addons;
 use DuckDev\Loggedin\Admin\Admin;
 use DuckDev\Loggedin\Admin\Assets;
 use DuckDev\Loggedin\Api\Addons as Addons_Api;
+use DuckDev\Loggedin\Api\Sessions as Sessions_Api;
 use DuckDev\Loggedin\Api\Settings as Settings_Api;
 use DuckDev\Loggedin\Contracts\Singleton;
 use DuckDev\Loggedin\Front\Session_Guard;
@@ -120,5 +121,6 @@ final class Core {
 	private function api(): void {
 		Settings_Api::instance();
 		Addons_Api::instance();
+		Sessions_Api::instance();
 	}
 }
