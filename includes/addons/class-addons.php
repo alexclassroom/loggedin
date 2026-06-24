@@ -33,7 +33,18 @@ final class Addons {
 		add_filter( 'loggedin_admin_page_vars', array( $this, 'admin_page_vars' ) );
 	}
 
+	/**
+	 * Get the Freemius instance for an addon, or null when not initialized.
+	 */
+	public function freemius_for( int $id ): ?Freemius {
+		$this->maybe_init_freemius();
+
+		return $this->freemius[ $id ] ?? null;
+	}
+
 	public function get_addons( bool $force = false ): array {
+		$this->maybe_init_freemius();
+
 		if ( ! isset( $this->freemius[ Plugin::FREEMIUS_ID ] ) ) {
 			return array();
 		}
@@ -42,6 +53,8 @@ final class Addons {
 	}
 
 	public function get_license_items(): array {
+		$this->maybe_init_freemius();
+
 		$items  = array();
 		$addons = $this->get_registered_addons();
 
@@ -138,7 +151,25 @@ final class Addons {
 		$this->get_addons( true );
 	}
 
+	/**
+	 * Lazily build the Freemius instances on first need.
+	 *
+	 * `admin_init` still triggers the eager path on admin requests; REST
+	 * requests (which don't fire admin_init) come through this fallback.
+	 */
+	protected function maybe_init_freemius(): void {
+		if ( isset( $this->freemius[ Plugin::FREEMIUS_ID ] ) ) {
+			return;
+		}
+
+		$this->init_freemius();
+	}
+
 	public function init_freemius(): void {
+		if ( isset( $this->freemius[ Plugin::FREEMIUS_ID ] ) ) {
+			return;
+		}
+
 		$this->freemius[ Plugin::FREEMIUS_ID ] = Freemius::get_instance(
 			Plugin::FREEMIUS_ID,
 			array(

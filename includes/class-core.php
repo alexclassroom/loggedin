@@ -14,6 +14,8 @@ namespace DuckDev\Loggedin;
 
 use DuckDev\Loggedin\Addons\Addons;
 use DuckDev\Loggedin\Admin\Admin;
+use DuckDev\Loggedin\Api\Addons as Addons_Api;
+use DuckDev\Loggedin\Api\Settings as Settings_Api;
 use DuckDev\Loggedin\Contracts\Singleton;
 use DuckDev\Loggedin\Front\Session_Guard;
 use DuckDev\Loggedin\Setup\Settings;
@@ -30,6 +32,7 @@ final class Core {
 		$this->front();
 		$this->admin();
 		$this->addons();
+		$this->api();
 
 		/**
 		 * Fires after the plugin has finished booting all modules.
@@ -57,8 +60,13 @@ final class Core {
 	}
 
 	private function addons(): void {
-		if ( is_admin() ) {
-			Addons::instance();
-		}
+		// Loaded everywhere — REST endpoints need it too. Freemius
+		// instances are built lazily, so there's no admin-only cost.
+		Addons::instance();
+	}
+
+	private function api(): void {
+		Settings_Api::instance();
+		Addons_Api::instance();
 	}
 }
