@@ -20,6 +20,7 @@ import {
 	RadioControl,
 	__experimentalNumberControl as NumberControl,
 } from '@wordpress/components';
+import { applyFilters } from '@wordpress/hooks';
 import useSettings from '../../../hooks/use-settings';
 import ForceLogoutPanel from '../components/force-logout-panel';
 
@@ -64,6 +65,22 @@ const Settings = () => {
 	// user sees what their choice means before they save.
 	const logicHelp = logics[ logic ] ? logics[ logic ].desc : '';
 
+	// Extension slot — addons append their own panels here by hooking
+	// `loggedin.settings.panels`. Each entry must be
+	// `{ id: string, Component: ReactComponent }`. Panels render in
+	// the order returned by the filter, between General Settings and
+	// Force Logout. Entries without a stable `id` are dropped so a
+	// later addon can replace a panel with the same id.
+	//
+	// Addons that need to persist values should read/write their own
+	// `show_in_rest` option through core-data's `useEntityProp` — the
+	// Save button at the bottom of the page flushes every edited site
+	// entity property in a single REST call, so no extra wiring is
+	// required to participate in the save flow.
+	const extraPanels = applyFilters( 'loggedin.settings.panels', [] ).filter(
+		( panel ) => panel && panel.id && panel.Component
+	);
+
 	return (
 		<>
 			<PanelBody
@@ -104,6 +121,10 @@ const Settings = () => {
 					/>
 				</PanelRow>
 			</PanelBody>
+
+			{ extraPanels.map( ( { id, Component } ) => (
+				<Component key={ id } />
+			) ) }
 
 			{ /*
 			 * Sibling panel below the form. Its own REST endpoint
