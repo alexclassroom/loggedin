@@ -29,10 +29,6 @@ pnpm-debug.log*
 # Build files
 *.zip
 
-# Unwanted config files
-composer.lock
-package-lock.json
-
 # Docs
 docs/.vitepress/dist
 docs/.vitepress/cache
