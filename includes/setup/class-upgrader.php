@@ -37,15 +37,16 @@ final class Upgrader {
 	/**
 	 * Register hooks.
 	 *
-	 * Priority 5 puts us ahead of any other code hooked into
-	 * `plugins_loaded` at the default priority — by the time
-	 * downstream modules run their `init()`, the new schema is
-	 * guaranteed to be in place.
+	 * Core boots us from inside its own `plugins_loaded` callback, so
+	 * any `add_action( 'plugins_loaded', ... )` here would register too
+	 * late to ever fire. Run the upgrade inline instead — Settings is
+	 * already constructed by the time Core reaches us, and downstream
+	 * modules instantiated after this line see the migrated schema.
 	 *
 	 * @since 3.0.0
 	 */
 	protected function init(): void {
-		add_action( 'plugins_loaded', array( $this, 'maybe_upgrade' ), 5 );
+		$this->maybe_upgrade();
 	}
 
 	/**
