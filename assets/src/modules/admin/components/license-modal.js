@@ -156,11 +156,16 @@ const LicenseModal = ( {
 							// Deactivate is the destructive action.
 							isDestructive={ addon.is_license_active }
 							isBusy={ isWorking }
+							disabled={ isWorking }
 							onClick={ handleSubmit }
 						>
-							{ addon.is_license_active
-								? __( 'Deactivate', 'loggedin' )
-								: __( 'Activate', 'loggedin' ) }
+							{ isWorking
+								? addon.is_license_active
+									? __( 'Deactivating…', 'loggedin' )
+									: __( 'Activating…', 'loggedin' )
+								: addon.is_license_active
+									? __( 'Deactivate', 'loggedin' )
+									: __( 'Activate', 'loggedin' ) }
 						</Button>
 					</FlexItem>
 				</Flex>
