@@ -21,19 +21,9 @@
     "start": "wp-scripts start assets/src/admin.js --output-path=build",
     "format": "wp-scripts format assets/src",
     "lint:js": "wp-scripts lint-js assets/src",
-    "pack": "wp-scripts plugin-zip"
+    "pack": "bin/pack.sh"
   },
   "devDependencies": {
     "@wordpress/scripts": "^30.21.0"
-  },
-  "files": [
-    "build",
-    "includes",
-    "languages",
-    "vendor",
-    "loggedin.php",
-    "uninstall.php",
-    "readme.txt",
-    "!/.package.json"
-  ]
+  }
 }

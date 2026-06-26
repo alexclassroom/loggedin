@@ -135,8 +135,8 @@ jobs:
 
   # ---------------------------------------------------------------
   # release — only fires on `v*` tags, gated on every other job
-  # passing first. Packs the plugin via `npm run pack`
-  # (wp-scripts plugin-zip) and uploads the ZIP to a GitHub Release.
+  # passing first. Packs the plugin via `bin/pack.sh` and uploads
+  # the ZIP to a GitHub Release.
   # ---------------------------------------------------------------
   release:
     name: Build and publish release
@@ -164,7 +164,8 @@ jobs:
         with:
           php-version: '7.4'
           coverage: none
-          tools: composer:v2
+          # wp-cli is needed by bin/pack.sh for the POT generation step.
+          tools: composer:v2, wp-cli
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -172,13 +173,14 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install Composer dependencies (production only)
-        uses: ramsey/composer-install@v3
-        with:
-          composer-options: '--no-dev --optimize-autoloader'
-
+      # bin/pack.sh handles its own composer install (production-only)
+      # and `npm run build`, so we only need the dev tree for `npm ci`
+      # here — pack.sh swaps to no-dev internally.
       - name: Install npm dependencies
         run: npm ci
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
 
       - name: Resolve release tag
         id: version
@@ -200,9 +202,12 @@ jobs:
           echo "Resolved tag: ${tag}"
 
       - name: Pack plugin
-        # wp-scripts plugin-zip reads package.json#files and emits
-        # <slug>.zip in the repo root.
-        run: npm run pack
+        # bin/pack.sh validates version consistency, generates the POT
+        # file, builds assets, installs production Composer deps, and
+        # writes releases/<slug>-<version>.zip.
+        env:
+          LOGGEDIN_PACK_SKIP_RESTORE: '1'
+        run: bash bin/pack.sh
 
       - name: Build changelog
         id: changelog
@@ -252,11 +257,12 @@ jobs:
         env:
           GH_TOKEN:   ${{ github.token }}
           TAG:        ${{ steps.version.outputs.tag }}
+          VERSION:    ${{ steps.version.outputs.version }}
           NOTES_FILE: ${{ steps.changelog.outputs.notes_file }}
         run: |
           set -euo pipefail
 
-          zip="loggedin.zip"
+          zip="releases/loggedin-${VERSION}.zip"
 
           if [[ ! -f "$zip" ]]; then
             echo "::error::Expected ZIP not found at ${zip}."
