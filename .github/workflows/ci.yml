@@ -1,0 +1,275 @@
+name: CI
+
+# Run on every push and pull request that targets a long-lived branch,
+# plus on version tags so the release job has the same workflow file
+# instead of a separate config.
+on:
+  push:
+    branches: [ master, dev, 'new/**', 'fix/**', 'improve/**', 'refactor/**' ]
+    tags:     [ 'v*' ]
+  pull_request:
+    branches: [ master, dev ]
+  workflow_dispatch:
+
+# Cancel any in-flight CI run on the same branch when a new commit
+# lands. The release job runs `cancel-in-progress: false` of its own
+# so an in-flight upload is never killed mid-way.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Principle of least privilege — every job declares only what it needs.
+# `release` overrides this with `contents: write`.
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------
+  # phpcs — WordPress + PHPCompatibility ruleset.
+  # ---------------------------------------------------------------
+  phpcs:
+    name: PHPCS (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '7.4', '8.3' ]
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Run PHPCS
+        run: composer lint
+
+  # ---------------------------------------------------------------
+  # phpunit — runs against the matrix of (PHP, WordPress) pairs.
+  # ---------------------------------------------------------------
+  phpunit:
+    name: PHPUnit (PHP ${{ matrix.php }} / WP ${{ matrix.wp }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '7.4', '8.3' ]
+        # A recent stable and the latest release. WP 5.0 is the
+        # declared "Requires at least" floor but its test suite no
+        # longer installs cleanly on modern runners.
+        wp:  [ '6.5', 'latest' ]
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: wordpress_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=10
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysql, mysqli
+          coverage: none
+          tools: composer:v2
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Install Subversion
+        # ubuntu-latest no longer ships svn, but install-wp-tests.sh
+        # checks out the WP test suite via svn.
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends subversion
+
+      - name: Install the WordPress test suite
+        run: bash bin/install-wp-tests.sh wordpress_test root '' 127.0.0.1 ${{ matrix.wp }} true
+
+      - name: Run PHPUnit
+        run: composer test
+
+  # ---------------------------------------------------------------
+  # build — make sure the bundled assets compile cleanly.
+  # ---------------------------------------------------------------
+  build:
+    name: Build assets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build the bundle
+        run: npm run build
+
+      - name: Verify the build directory is non-empty
+        run: |
+          test -d build
+          test "$(ls -A build)"
+          echo "Built files:"
+          ls -la build/
+
+  # ---------------------------------------------------------------
+  # release — only fires on `v*` tags, gated on every other job
+  # passing first. Packs the plugin via `npm run pack`
+  # (wp-scripts plugin-zip) and uploads the ZIP to a GitHub Release.
+  # ---------------------------------------------------------------
+  release:
+    name: Build and publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [ phpcs, phpunit, build ]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    # Don't cancel in-flight releases — letting `gh release upload`
+    # finish is safer than killing it half-way through.
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: none
+          tools: composer:v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Composer dependencies (production only)
+        uses: ramsey/composer-install@v3
+        with:
+          composer-options: '--no-dev --optimize-autoloader'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Resolve release tag
+        id: version
+        run: |
+          set -euo pipefail
+
+          plugin_version=$(grep -E '^[[:space:]]*\*?[[:space:]]*Version:' loggedin.php \
+            | head -1 | sed -E 's/.*Version:[[:space:]]*//' | tr -d '\r')
+
+          tag="${{ github.ref_name }}"
+
+          if [[ "${tag#v}" != "${plugin_version}" ]]; then
+            echo "::error::Tag '${tag}' does not match plugin header version '${plugin_version}'."
+            exit 1
+          fi
+
+          echo "tag=${tag}"                >> "$GITHUB_OUTPUT"
+          echo "version=${plugin_version}" >> "$GITHUB_OUTPUT"
+          echo "Resolved tag: ${tag}"
+
+      - name: Pack plugin
+        # wp-scripts plugin-zip reads package.json#files and emits
+        # <slug>.zip in the repo root.
+        run: npm run pack
+
+      - name: Build changelog
+        id: changelog
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          git fetch --tags --force --quiet
+
+          prev_tag=$(git tag --list 'v*' --sort=-v:refname \
+            | grep -v "^${TAG}$" \
+            | head -n1 || true)
+
+          repo_url="${{ github.server_url }}/${{ github.repository }}"
+
+          if [[ -n "$prev_tag" ]]; then
+            echo "Diffing against previous tag: $prev_tag"
+            range="${prev_tag}..${TAG}"
+            header="## What's changed since ${prev_tag}"
+          else
+            echo "No previous tag — listing entire history."
+            range="${TAG}"
+            header="## What's changed"
+          fi
+
+          notes_file="$(mktemp)"
+          {
+            echo "$header"
+            echo
+            git log "$range" --no-merges --reverse \
+              --pretty=format:"- %s ([\`%h\`](${repo_url}/commit/%H))" \
+              | grep -Ev '^- Bump version '
+            echo
+            echo
+            if [[ -n "$prev_tag" ]]; then
+              echo "**Full diff:** [${prev_tag}...${TAG}](${repo_url}/compare/${prev_tag}...${TAG})"
+            fi
+          } > "$notes_file"
+
+          echo "notes_file=${notes_file}" >> "$GITHUB_OUTPUT"
+          echo "----- release notes -----"
+          cat "$notes_file"
+          echo "-------------------------"
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN:   ${{ github.token }}
+          TAG:        ${{ steps.version.outputs.tag }}
+          NOTES_FILE: ${{ steps.changelog.outputs.notes_file }}
+        run: |
+          set -euo pipefail
+
+          zip="loggedin.zip"
+
+          if [[ ! -f "$zip" ]]; then
+            echo "::error::Expected ZIP not found at ${zip}."
+            exit 1
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release ${TAG} exists — replacing the ZIP asset and refreshing notes."
+            gh release upload "$TAG" "$zip" --clobber
+            gh release edit   "$TAG" --notes-file "$NOTES_FILE"
+          else
+            echo "Creating release ${TAG}."
+            gh release create "$TAG" "$zip" \
+              --title "$TAG" \
+              --notes-file "$NOTES_FILE"
+          fi

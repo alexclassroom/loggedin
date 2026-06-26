@@ -1,0 +1,12 @@
+/*
+ * Admin bundle stylesheet.
+ *
+ * Imports the page-shell partials. New surface-area styles get a new
+ * partial under `ui/` rather than being inlined here so the entry
+ * stays a single index.
+ */
+@use 'ui/page-header';
+@use 'ui/page-body';
+@use 'ui/footer';
+@use 'ui/addons';
+@use 'ui/notices';

@@ -1,27 +1,98 @@
+# Loggedin — Limit Concurrent Sessions
+
+Prevent account sharing on WordPress by capping how many places a user can be logged in at once.
+
 [![Plugin Version](https://img.shields.io/wordpress/plugin/v/loggedin.svg?style=flat-square)](https://wordpress.org/plugins/loggedin/)
 [![License](https://img.shields.io/badge/license-GPL_v2%2B-blue.svg?style=flat-square)](https://opensource.org/license/GPL-2.0)
 [![WordPress Tested](https://img.shields.io/wordpress/v/loggedin.svg?style=flat-square)](https://wordpress.org/plugins/loggedin/)
 [![Build Status](https://img.shields.io/badge/tests-passing-brightgreen.svg?style=flat-square)](https://github.com/Joel-James/loggedin/actions)
 
-# Loggedin - Limit Concurrent Sessions
-
-Loggedin is a lightweight WordPress plugin that lets you easily limit the number of simultaneous active sessions a user can have. This is a crucial feature for membership sites, online courses, and other platforms where you need to prevent users from sharing their accounts.
+Loggedin enforces a per-account session limit across every device a user signs in from. When the limit is hit, you choose what happens next — block the new login, or kick the oldest session out so the new device can take its place.
 
 ## Features
 
-- **Set Global Limits**: Define a maximum number of concurrent logins for all users.
-- **Flexible Login Behavior**: Choose to either block new logins when the limit is reached or automatically log out the oldest session to allow a new one.
-- **Prevent Account Sharing**: By limiting sessions, you can effectively stop users from sharing their login credentials with others.
-- **Admin Control**: Easily force log out a user from the admin dashboard, giving you full control over active sessions.
-- **Developer-Friendly**: The plugin is built with a hook-based architecture, making it highly customizable and extensible for developers.
+- **Concurrent-session cap** — set a global maximum number of simultaneous logins per account.
+- **Two enforcement modes** — block the new login, or auto-logout the oldest active session.
+- **Force-logout tool** — terminate every active session for any user from the admin UI.
+- **Modern settings UI** — built with `@wordpress/components` and Gutenberg patterns, not a hand-rolled options page.
+- **REST-backed** — all settings flow through the WordPress REST API.
+- **Extensible** — addons hook into the settings UI via the `loggedin.settings.panels` JS filter and into the bootstrap via the `loggedin_init` action.
+- **Privacy-respecting** — no third-party calls beyond Freemius for licensed addons.
 
-## Addons
+## Premium addons
 
-There are [several add-ons](https://duckdev.com/addons/loggedin/) available to make LoggedIn more powerful.
+| Addon | Description |
+| --- | --- |
+| [Limit Per User](https://duckdev.com/addon/limit-per-user/) | Override the global cap for individual users. |
+| [Limit Per Role](https://duckdev.com/addon/limit-per-role/) | Set custom caps per WordPress role; highest applicable wins. |
+| [Real-time Logout](https://duckdev.com/addon/real-time-logout/) | Detect background-terminated sessions and log the user out immediately. |
 
-## Useful Links
+## Requirements
 
-* [See the FAQ](https://wordpress.org/plugins/loggedin/#faq-header).
-* [See the documentation](https://docs.duckdev.com/loggedin/general-settings).
-* [See the changelog](https://wordpress.org/plugins/loggedin/changelog/).
-* [See the contributing guidelines](https://github.com/Joel-James/loggedin?tab=contributing-ov-file).
+- PHP **7.4+**
+- WordPress **5.0+**
+
+## Installation
+
+**From WordPress.org**
+
+1. Plugins → Add New → search "Loggedin".
+2. Install and activate.
+3. Configure under **Settings → Loggedin**.
+
+**From source**
+
+```bash
+git clone https://github.com/joel-james/loggedin.git
+cd loggedin
+composer install --no-dev
+npm install && npm run build
+```
+
+Then symlink or copy the directory into wp-content/plugins/ and activate.
+
+## Development
+
+```bash
+composer install         # PHP dependencies (incl. dev tools)
+npm install              # JS dependencies
+npm run start            # JS watch build
+npm run build            # production JS build
+composer test            # PHPUnit
+composer run phpcs       # WPCS lint
+```
+
+PHP code follows WordPress Coding Standards (see `phpcs.xml.dist`). JS uses `@wordpress/scripts` defaults.
+
+## Extending
+
+Addons register themselves via two hooks wired at file load:
+
+```php
+// Register with the parent's Freemius-addons map.
+add_filter( 'loggedin_register_addon', [ Plugin::class, 'register_addon' ] );
+
+// Boot once the parent's modules are ready.
+add_action( 'loggedin_init', [ Plugin::class, 'boot' ] );
+```
+Addons can contribute a panel to the Settings tab from JS:
+
+```javascript
+import { addFilter } from '@wordpress/hooks';
+
+addFilter(
+    'loggedin.settings.panels',
+    'my-addon/panel',
+    ( panels ) => [ ...panels, { id: 'my-addon', Component: MyPanel } ]
+);
+```
+
+## Contributing
+Pull requests welcome. Please read contributing.md and run composer test + composer run phpcs before opening a PR.
+
+## Security
+If you discover a security issue, please follow the disclosure process in security.md rather than opening a public issue.
+
+## License
+[GPL-2.0+](./license) © [Joel James](https://joe.to/)
+

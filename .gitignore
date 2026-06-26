@@ -2,6 +2,9 @@
 node_modules
 /build
 vendor
+.phpcs.cache
+.phpunit.result.cache
+/coverage
 
 
 # local env files
@@ -25,10 +28,6 @@ pnpm-debug.log*
 
 # Build files
 *.zip
-
-# Unwanted config files
-composer.lock
-package-lock.json
 
 # Docs
 docs/.vitepress/dist
