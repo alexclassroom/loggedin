@@ -71,10 +71,7 @@ const AddonCard = ( { addon, onManageLicense } ) => {
 						alt={ addon.title }
 					/>
 					{ addon.is_active && (
-						<span
-							className="loggedin-addon-status"
-							aria-label={ __( 'Active', 'loggedin' ) }
-						>
+						<span className="loggedin-addon-status">
 							{ __( 'Active', 'loggedin' ) }
 						</span>
 					) }
@@ -84,17 +81,41 @@ const AddonCard = ( { addon, onManageLicense } ) => {
 			<CardHeader>
 				<strong>{ addon.title }</strong>
 				{ /*
-				 * When there is no banner, the "Active" pill has
-				 * nowhere to live, so we fall back to surfacing it
-				 * in the header instead. (When a banner *is*
-				 * present, the overlaid pill above is the only
-				 * copy — we don't duplicate it here.)
+				 * Right-side badge cluster. Premium/Free always
+				 * shown; Licensed/Unlicensed only for installed
+				 * addons. When there's no banner the "Active" pill
+				 * falls back here too — otherwise it lives overlaid
+				 * on the banner above.
 				 */ }
-				{ ! addon.banner && addon.is_active && (
-					<span className="loggedin-addon-status">
-						{ __( 'Active', 'loggedin' ) }
+				<span className="loggedin-addon-header-badges">
+					{ ! addon.banner && addon.is_active && (
+						<span className="loggedin-addon-status">
+							{ __( 'Active', 'loggedin' ) }
+						</span>
+					) }
+					<span
+						className={ `loggedin-addon-badge loggedin-addon-badge--${
+							addon.is_premium ? 'premium' : 'free'
+						}` }
+					>
+						{ addon.is_premium
+							? __( 'Premium', 'loggedin' )
+							: __( 'Free', 'loggedin' ) }
 					</span>
-				) }
+					{ addon.is_active && (
+						<span
+							className={ `loggedin-addon-badge loggedin-addon-badge--${
+								addon.is_license_active
+									? 'licensed'
+									: 'unlicensed'
+							}` }
+						>
+							{ addon.is_license_active
+								? __( 'Licensed', 'loggedin' )
+								: __( 'Unlicensed', 'loggedin' ) }
+						</span>
+					) }
+				</span>
 			</CardHeader>
 
 			<CardBody className="loggedin-addon-description">

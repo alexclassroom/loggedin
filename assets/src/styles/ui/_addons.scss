@@ -77,7 +77,8 @@
 	.loggedin-addon-status {
 		display: inline-flex;
 		align-items: center;
-		padding: 3px 10px;
+		gap: 6px;
+		padding: 3px 10px 3px 8px;
 		font-size: 11px;
 		font-weight: 600;
 		line-height: 1.4;
@@ -86,8 +87,48 @@
 		border-radius: 12px;
 		text-transform: uppercase;
 		letter-spacing: .02em;
+
+		// Status dot — solid white so it pops against the coloured
+		// background. Applies to every pill variant.
+		&::before {
+			content: '';
+			width: 6px;
+			height: 6px;
+			border-radius: 50%;
+			background: #fff;
+		}
 	}
 
+	// Right-aligned badge cluster inside the card header. The header
+	// is a flex container, so this sits opposite the title.
+	.loggedin-addon-header-badges {
+		display: inline-flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-left: auto;
+	}
+
+	// Square-cornered card-header badge palette, kept in sync with
+	// the 404 to 301 plugin so the two products look like siblings.
+	.loggedin-addon-badge {
+		display: inline-block;
+		padding: 2px 8px;
+		font-size: 11px;
+		font-weight: 600;
+		line-height: 1.4;
+		color: #fff;
+		background: #50575e;
+		border-radius: 3px;
+		text-transform: uppercase;
+		letter-spacing: .02em;
+
+		&--premium    { background: #7c3aed; }
+		&--free       { background: #50575e; }
+		&--licensed   { background: #008a20; }
+		&--unlicensed { background: #b26200; }
+	}
+
+	// Active pill overlaid on the banner top-right when one exists.
 	.loggedin-addon-banner .loggedin-addon-status {
 		position: absolute;
 		top: 10px;
