@@ -30,7 +30,7 @@ Loggedin enforces a per-account session limit across every device a user signs i
 ## Requirements
 
 - PHP **7.4+**
-- WordPress **5.0+**
+- WordPress **6.0+**
 
 ## Installation
 

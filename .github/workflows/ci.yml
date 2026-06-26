@@ -62,10 +62,8 @@ jobs:
       fail-fast: false
       matrix:
         php: [ '7.4', '8.3' ]
-        # A recent stable and the latest release. WP 5.0 is the
-        # declared "Requires at least" floor but its test suite no
-        # longer installs cleanly on modern runners.
-        wp:  [ '6.5', 'latest' ]
+        # The declared "Requires at least" floor and the latest release.
+        wp:  [ '6.0', 'latest' ]
 
     services:
       mysql:

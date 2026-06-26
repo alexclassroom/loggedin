@@ -2,8 +2,8 @@
 Contributors: joelcj91,duckdev
 Tags: concurrent login, login limit, prevent account sharing, user sessions, force logout
 Donate link: https://paypal.me/JoelCJ
-Requires at least: 5.0
-Tested up to: 6.9
+Requires at least: 6.0
+Tested up to: 7.0
 Stable tag: 3.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
