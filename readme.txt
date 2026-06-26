@@ -166,8 +166,8 @@ See the [developer docs](https://docs.duckdev.com/loggedin/developer-docs) for e
 
 == Screenshots ==
 
-1. **Settings** — concurrent-login limit and login logic.
-2. **Manage Sessions** — admin Force Logout panel.
+1. **General Settings** — concurrent-login limit and login logic.
+2. **Force Logout** — admin Force Logout panel.
 
 == Changelog ==
 
