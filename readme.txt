@@ -171,106 +171,34 @@ See the [developer docs](https://docs.duckdev.com/loggedin/developer-docs) for e
 
 == Changelog ==
 
-= 2.0.4 (02/01/2026) =
+= 3.0.0 =
+* New: Modern React-powered admin under Users → Loggedin with two tabs — Settings (concurrent-login limit + login logic + Force Logout panel) and Add-ons (catalogue + license management).
+* New: REST API at `/loggedin/v1/` for settings, session management and add-on licensing.
+* New: Unified `loggedin_settings` option registered with `show_in_rest`, readable and writable by the React admin and by external integrations through the standard core-data flow.
+* New: Force Logout panel now accepts a user ID, email or username — the resolver detects the input shape automatically.
+* New: Add-ons module powered by Freemius — official add-ons (Real-time Logout, Limit Per User, Limit Per Role) self-register via the new `loggedin_register_addon` filter and appear in the Add-ons tab.
+* New: JavaScript extension slot — add-ons can append their own React `PanelBody` to the Settings tab via the `loggedin.settings.panels` filter.
+* New: Documented PHP hook surface — `loggedin_init`, `loggedin_settings_defaults`, `loggedin_admin_script_vars`, `loggedin_addons_catalog`, `loggedin_destroy_oldest_session` and more.
+* Improve: Reorganised plugin structure (PSR-4 namespaces under `DuckDev\Loggedin\`) and aligned with WordPress Coding Standards.
+* Improve: Comprehensive sanitisation pass across every input and option write path.
+* Improve: PHP 7.4 is now the minimum supported version.
 
-**👌 Improvements**
+= 2.0.4 =
+* Improve: Review-notice scheduling now respects the dismiss state on every admin page load.
+* Fix: Invalid nonce action prevented review notices from being dismissed.
 
-* Review notice check.
+= 2.0.3 =
+* Improve: Removed leftover debug code that shipped accidentally in 2.0.2.
 
-**🐛 Bug Fixes**
-
-* Invalid nonce action prevents notices from being dismissed.
-
-= 2.0.3 (09/12/2025) =
-
-**👌 Improvements**
-
-* Remove debug code.
-
-= 2.0.2 (11/11/2025) =
-
-**🐛 Bug Fixes**
-
-* Nonce verification for Force Logout.
-* Uninstall cleanup.
-
-= 2.0.1 (11/11/2025) =
-
-**🐛 Bug Fixes**
-
-* Fatal errors.
-* Empty addons page.
-
-= 2.0.0 (10/11/2025) =
-
-**📦 New**
-
-* Settings page
-* Addons
-* Logout Oldest logic - Thanks [#19](https://github.com/Joel-James/loggedin/pull/19).
-
-**👌 Improvements**
-
-* Coding standards.
-* Sanitization.
-
-= 1.3.2 (01/10/2024) =
-
-**🐛 Bug Fixes**
-
-* Security fixes.
-
-= 1.3.1 (19/09/2020) =
-
-**👌 Improvements**
-
-* Support ajax logins - Thanks [Carlos Faria](https://github.com/cfaria).
-
-= 1.3.0 (28/08/2020) =
-
-**👌 Improvements**
-
-* Improved "Allow" logic to check only after password check.
-
-= 1.2.0 (07/06/2019) =
-
-**📦 New**
-
-* Added ability to choose login logic.
-
-= 1.1.0 (06/06/2019) =
-
-**📦 New**
-
-* Added ability to force logout users.
-* Added cleanup on plugin uninstall.
-* Added review notice.
-
-**👌 Improvements**
-
-* Code improvement
-
-= 1.0.1 (02/07/2016) =
-
-**🐛 Bug Fixes**
-
-* Fixing misspelled variable.
-
-= 1.0.0 (16/06/2016) =
-
-**📦 New**
-
-* Initial version release.
-
+For the full release history, see the [changelog](https://docs.duckdev.com/loggedin/changelog).
 
 == Upgrade Notice ==
 
-= 2.0.4 (02/01/2026) =
+= 3.0.0 =
+A major release with a brand-new React admin, REST API, add-ons catalogue with in-dashboard license management and a documented hook surface. Back up your database before updating.
 
-**👌 Improvements**
+= 2.0.4 =
+A maintenance release that fixes the review-notice dismiss action and respects the dismiss state across admin page loads.
 
-* Review notice check.
-
-**🐛 Bug Fixes**
-
-* Invalid nonce action prevents notices from being dismissed.
+= 2.0.3 =
+A maintenance release that removes leftover debug code shipped accidentally in 2.0.2.
