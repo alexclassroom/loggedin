@@ -16,13 +16,60 @@ import { useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
+	Notice,
 	PanelBody,
 	PanelRow,
 	TextControl,
 } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
+import { applyFilters } from '@wordpress/hooks';
 import { store as noticesStore } from '@wordpress/notices';
+
+/**
+ * Default cross-sell Notice promoting the Active Sessions addon.
+ *
+ * Lives at the bottom of the Force Logout panel and is routed through
+ * the `loggedin.settings.force_logout.cross_sell` filter so the addon
+ * — once loaded on this same screen — returns `null` to hide it.
+ *
+ * The CTA is an inline text link in the body copy rather than the
+ * Notice `actions` button: the button forces the banner to a taller
+ * two-row layout, so a plain link keeps the notice compact. Matches
+ * the 404 to 301 plugin's cross-sell design.
+ *
+ * The Notice is non-dismissible: a dismissible CTA would persist its
+ * dismissed state in component memory only (no server round-trip), so
+ * it'd come straight back on the next page load. Better to render a
+ * stable banner the addon can swap out entirely.
+ */
+const DefaultCrossSell = () => (
+	<PanelRow className="loggedin-cross-sell">
+		<Notice status="info" isDismissible={ false }>
+			<p className="loggedin-cross-sell__title">
+				<strong>
+					{ __(
+						'Need to log someone out without knowing who?',
+						'loggedin'
+					) }
+				</strong>
+			</p>
+			<p>
+				{ __(
+					'Install the Active Sessions addon to browse every user with a live session, drill into each device they’re signed in from, and sign them out one at a time — or all at once.',
+					'loggedin'
+				) }{ ' ' }
+				<a
+					href="https://duckdev.com/addon/loggedin-active-sessions/"
+					target="_blank"
+					rel="noreferrer"
+				>
+					{ __( 'Get Active Sessions', 'loggedin' ) }
+				</a>
+			</p>
+		</Notice>
+	</PanelRow>
+);
 
 const ForceLogoutPanel = () => {
 	// Local input state. Plain `useState` — the panel doesn't need
@@ -34,6 +81,18 @@ const ForceLogoutPanel = () => {
 
 	const { createSuccessNotice, createErrorNotice } =
 		useDispatch( noticesStore );
+
+	/*
+	 * Cross-sell slot. Defaults to <DefaultCrossSell />; the Active
+	 * Sessions addon returns `null` here to suppress the promo once
+	 * installed. Kept as its own filter so future addons can replace
+	 * the banner with a different recommendation without parent-side
+	 * changes.
+	 */
+	const crossSell = applyFilters(
+		'loggedin.settings.force_logout.cross_sell',
+		<DefaultCrossSell />
+	);
 
 	/**
 	 * Submit handler — POST the identifier and dispatch a snackbar
@@ -116,6 +175,8 @@ const ForceLogoutPanel = () => {
 						: __( 'Force Logout', 'loggedin' ) }
 				</Button>
 			</PanelRow>
+
+			{ crossSell }
 		</PanelBody>
 	);
 };
