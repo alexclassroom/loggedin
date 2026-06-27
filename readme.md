@@ -23,6 +23,7 @@ Loggedin enforces a per-account session limit across every device a user signs i
 
 | Addon | Description |
 | --- | --- |
+| [Active Sessions](https://duckdev.com/addon/loggedin-active-sessions/) | Browse every user with a live session, drill into each device, and sign out one session — or all of them — in one click. |
 | [Limit Per User](https://duckdev.com/addon/limit-per-user/) | Override the global cap for individual users. |
 | [Limit Per Role](https://duckdev.com/addon/limit-per-role/) | Set custom caps per WordPress role; highest applicable wins. |
 | [Real-time Logout](https://duckdev.com/addon/real-time-logout/) | Detect background-terminated sessions and log the user out immediately. |
