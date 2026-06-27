@@ -34,7 +34,6 @@
 
 namespace DuckDev\Loggedin;
 
-// Block direct file access — WPINC is only defined when loaded by core.
 defined( 'WPINC' ) || die;
 
 /**
