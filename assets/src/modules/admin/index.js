@@ -10,12 +10,12 @@
  * resolvers are scoped to the time it's on screen (no stale
  * subscriptions, no background polling for hidden tabs).
  */
-import { useState } from '@wordpress/element';
+import { useMemo, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Spinner } from '@wordpress/components';
 import { Footer, Notices, PageBody, PageHeader, TabNav } from '../../common';
 import useSettings from '../../hooks/use-settings';
-import tabs from './tabs';
+import { resolveTabs } from './tabs';
 
 const AdminApp = () => {
 	// We block the first render of any tab on the initial settings
@@ -24,6 +24,11 @@ const AdminApp = () => {
 	// core-data resolves prevents a flash of empty form controls
 	// when the user lands on the default Settings tab.
 	const { hasLoaded } = useSettings();
+
+	// Resolve the tab registry on mount so addon bundles have a
+	// chance to register via `loggedin.admin.tabs` before the filter
+	// is read. Memoised so the lookup doesn't run every render.
+	const tabs = useMemo( () => resolveTabs(), [] );
 
 	// Ordered list of tab keys. The first entry is the default tab.
 	const tabKeys = Object.keys( tabs );
