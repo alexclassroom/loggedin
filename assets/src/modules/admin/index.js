@@ -13,7 +13,14 @@
 import { useMemo, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Spinner } from '@wordpress/components';
-import { Footer, Notices, PageBody, PageHeader, TabNav } from '../../common';
+import {
+	AdminNoticeSlot,
+	Footer,
+	Notices,
+	PageBody,
+	PageHeader,
+	TabNav,
+} from '../../common';
 import useSettings from '../../hooks/use-settings';
 import { resolveTabs } from './tabs';
 
@@ -66,6 +73,8 @@ const AdminApp = () => {
 			</PageHeader>
 
 			<PageBody wide={ isWide }>
+				<AdminNoticeSlot />
+
 				{ ! hasLoaded ? (
 					<div className="loggedin-page-loader">
 						<Spinner />

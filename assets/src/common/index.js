@@ -5,6 +5,7 @@
  * rather than reaching into individual files, so the common shape of
  * an admin page is obvious from the top of each module.
  */
+export { default as AdminNoticeSlot } from './admin-notice-slot';
 export { default as AppShell } from './app-shell';
 export { default as ErrorBoundary } from './error-boundary';
 export { default as Footer } from './footer';

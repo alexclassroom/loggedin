@@ -10,6 +10,23 @@
  * default `bottom: 0; left: 0` positioning without resorting to
  * `!important`.
  */
+/*
+ * Slot that receives WP admin notices (`.notice`, `.updated`, `.error`)
+ * relocated from above `.wrap` by <AdminNoticeSlot />. Empty by default;
+ * only reserves vertical space when it actually contains a notice, so
+ * a screen with no admin notices doesn't gain a stray margin between
+ * the plugin header and the settings body.
+ */
+.loggedin-admin-notices:not(:empty) {
+	margin: 16px 0;
+
+	.notice,
+	.updated,
+	.error {
+		margin: 5px 0;
+	}
+}
+
 .components-snackbar-list.loggedin-notices {
 	position: fixed;
 	top: 52px;
