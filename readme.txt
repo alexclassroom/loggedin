@@ -173,8 +173,10 @@ See the [developer docs](https://docs.duckdev.com/loggedin/developer-docs) for e
 == Changelog ==
 
 = 3.0.2 =
-* New: Review-request notice restored, now powered by the `duckdev/wp-review-notice` library and scoped to the Loggedin settings screen.
+* New: Review-request notice restored, powered by the `duckdev/wp-review-notice` library and scoped to the Loggedin settings screen with a 7-day delay.
 * Improve: Legacy review-notice state migrated to the new storage keys so users who already dismissed the prompt stay dismissed.
+* Improve: Admin notices now render inside the plugin's centered page column instead of above the header, matching the 404 to 301 shell.
+* Fix: Left-hand gap between the plugin header and the admin sidebar caused by WordPress's default `#wpcontent` padding.
 
 = 3.0.1 =
 * New: `loggedin.admin.tabs` JS filter — addons can register their own React component as a tab in the Loggedin admin nav, with optional `before` / `after` positioning hints. Powers the new Active Sessions addon.
@@ -206,7 +208,7 @@ For the full release history, see the [changelog](https://docs.duckdev.com/logge
 == Upgrade Notice ==
 
 = 3.0.2 =
-Brings back the wp.org review prompt (now scoped to the Loggedin settings screen) and migrates any prior dismiss state so existing users are not re-prompted.
+Brings back the wp.org review prompt (now scoped to the Loggedin settings screen), migrates any prior dismiss state so existing users are not re-prompted, and tightens the admin layout so notices sit inside the page column.
 
 = 3.0.1 =
 A maintenance release that fixes the v2→v3 settings migration and adds the JS extension points the new Active Sessions addon hooks into.
