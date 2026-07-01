@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c1b1ab1a59cffab79bfa4f162f5067b7",
+    "content-hash": "17556b306b3ac3572a68529f30b0d180",
     "packages": [
         {
             "name": "duckdev/freemius-plugin-licensing",
@@ -66,10 +66,16 @@
         {
             "name": "duckdev/wp-review-notice",
             "version": "2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/duckdev/wp-review-notice.git",
+                "reference": "ff2aa098820d0e6d9b0b6095770e0775cb1e6477"
+            },
             "dist": {
-                "type": "path",
-                "url": "/Users/joel/Sites/duckdev/libs/wp-review-notice",
-                "reference": "13cbb4f5c5aa867d227978d9e943114b56c4e99e"
+                "type": "zip",
+                "url": "https://api.github.com/repos/duckdev/wp-review-notice/zipball/ff2aa098820d0e6d9b0b6095770e0775cb1e6477",
+                "reference": "ff2aa098820d0e6d9b0b6095770e0775cb1e6477",
+                "shasum": ""
             },
             "require": {
                 "php": ">=7.4"
@@ -88,22 +94,7 @@
                     "DuckDev\\Reviews\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "DuckDev\\Reviews\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "phpunit"
-                ],
-                "phpcs": [
-                    "phpcs"
-                ],
-                "phpcbf": [
-                    "phpcbf"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-2.0-or-later"
             ],
@@ -124,12 +115,10 @@
                 "wordpress"
             ],
             "support": {
-                "issues": "https://github.com/duckdev/wp-review-notice/issues/"
+                "issues": "https://github.com/duckdev/wp-review-notice/issues/",
+                "source": "https://github.com/duckdev/wp-review-notice/tree/v2.0.0"
             },
-            "transport-options": {
-                "symlink": true,
-                "relative": false
-            }
+            "time": "2026-07-01T07:08:23+00:00"
         }
     ],
     "packages-dev": [

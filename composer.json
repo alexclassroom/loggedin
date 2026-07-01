@@ -21,15 +21,6 @@
       "includes/"
     ]
   },
-  "repositories": [
-    {
-      "type": "path",
-      "url": "/Users/joel/Sites/duckdev/libs/wp-review-notice",
-      "options": {
-        "symlink": true
-      }
-    }
-  ],
   "require": {
     "php": ">=7.4",
     "duckdev/freemius-plugin-licensing": "^2.0.1",
